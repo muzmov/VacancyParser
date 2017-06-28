@@ -1,0 +1,24 @@
+CREATE SCHEMA IF NOT EXISTS `vacancyparser`;
+
+USE vacancyparser;
+
+SET SQL_SAFE_UPDATES = 0;
+
+DROP TABLE IF EXISTS Vacancies;
+
+CREATE TABLE Vacancies (
+  title       VARCHAR(255),
+  url         VARCHAR(255),
+  siteName         VARCHAR(255),
+  city        VARCHAR(255),
+  companyName VARCHAR(255),
+  salary      VARCHAR(255),
+  rating      DOUBLE,
+  rewiews     VARCHAR(10000)
+);
+
+INSERT INTO Vacancies
+VALUES
+  ('Vacancy #1', 'http://hh/.ru', 'hh.ru', 'Moscow', 'Glowbyte', '100 000 - 150 000 roubles', 4.4, 'http://linktoreviews.ru'),
+  ('Vacancy #2', 'http://hh/.ru', 'hh.ru', 'Moscow', 'I-TECO', '10 000 - 150 000 roubles', 4.5, 'http://linktoreviews.ru'),
+  ('Vacancy #3', 'http://hh/.ru', 'hh.ru', 'Moscow', 'Rostelecom', '10 000 - 15 000 roubles', 4.6, 'http://linktoreviews.ru');
