@@ -7,6 +7,4 @@ import java.util.List;
  */
 public interface VacancyParser {
     List<Vacancy> searchContaining(String query, boolean inTitle, boolean inDescription);
-
-    List<Vacancy> selectCity(String city);
 }

@@ -31,18 +31,14 @@ public class SearchController extends DependencyInjectionServlet {
     @Inject("dao")
     VacancyDao dao;
 
-    VacancyParser parser = new VacancyParserImpl(new Provider(new HHStrategy()), new Provider(new MoikrugStrategy()));
+    VacancyParser parser = new VacancyParserImpl(new Provider(new HHStrategy()));
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String searchString = request.getParameter("searchString");
         logger.trace("Searching for \"" + searchString + "\"");
-        List<Vacancy> searchResults = parser.selectCity("Moscow");
+        List<Vacancy> searchResults = parser.searchContaining(searchString, true, true);
         request.setAttribute("vacancies", searchResults);
         logger.trace(searchResults.size() + " results found");
         request.getRequestDispatcher("results.jsp").forward(request, response);
-    }
-
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
     }
 }

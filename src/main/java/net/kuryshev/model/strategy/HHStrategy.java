@@ -16,14 +16,16 @@ import java.util.List;
 public class HHStrategy implements Strategy {
     private final static String URL_FORMAT =
             //"http://javarush.ru/testdata/big28data2.html?text=java+%s&page=%d";
-            "http://hh.ua/search/vacancy?text=java+%s&page=%d";
+            "http://hh.ru/search/vacancy?text=%s&page=%d";
 
 
     @Override
     public List<Vacancy> getVacancies(String searchString) {
         List<Vacancy> result = new ArrayList<>();
         int page = 1;
-        while (true) {
+
+        //TODO remove this page < 10 condition (it's here only for testing)
+        while (page < 10) {
             try {
                 Document doc = getDocument(searchString, page++);
                 Elements elements = null;

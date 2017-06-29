@@ -14,16 +14,18 @@ import java.util.List;
  * Created by 1 on 08.06.2017.
  */
 public class MoikrugStrategy implements Strategy {
-    private static final String URL_FORMAT = "https://moikrug.ru/vacancies?q=java+%s&page=%d";
+    private static final String URL_FORMAT = "https://moikrug.ru/vacancies?q=%s&page=%d";
 
     @Override
     public List<Vacancy> getVacancies(String searchString) {
         List<Vacancy> Vacancies = new ArrayList<>();
-        int pageNum = 0;
+        int page = 0;
         Document doc = null;
-        while (true) {
+
+        //TODO handle all the pages (only 10 now)
+        while (page < 10) {
             try {
-                doc = getDocument(searchString, pageNum);
+                doc = getDocument(searchString, page);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -43,7 +45,7 @@ public class MoikrugStrategy implements Strategy {
                     Vacancies.add(vac);
                 }
             }
-            pageNum++;
+            page++;
         }
         return Vacancies;
     }

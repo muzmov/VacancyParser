@@ -19,7 +19,11 @@ public class Provider {
         this.strategy = strategy;
     }
 
-    public List<Vacancy> getJavaVacancies(String searchString) {
+    public Strategy getStrategy() {
+        return strategy;
+    }
+
+    public List<Vacancy> getVacanciesContaining(String searchString) {
         return strategy.getVacancies(searchString);
     }
 }
