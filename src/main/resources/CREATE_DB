@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS Vacancies;
 CREATE TABLE Vacancies (
   title       VARCHAR(255),
   url         VARCHAR(255),
-  siteName         VARCHAR(255),
+  siteName    VARCHAR(255),
   city        VARCHAR(255),
   companyName VARCHAR(255),
   salary      VARCHAR(255),

@@ -3,8 +3,13 @@ package net.kuryshev.controller;
 import net.kuryshev.controller.di.DependencyInjectionServlet;
 import net.kuryshev.controller.di.Inject;
 import net.kuryshev.model.Vacancy;
+import net.kuryshev.model.VacancyParser;
+import net.kuryshev.model.VacancyParserImpl;
 import net.kuryshev.model.dao.VacancyDao;
 import net.kuryshev.model.dao.VacancyDaoJdbc;
+import net.kuryshev.model.strategy.HHStrategy;
+import net.kuryshev.model.strategy.MoikrugStrategy;
+import net.kuryshev.model.strategy.Provider;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
@@ -26,10 +31,12 @@ public class SearchController extends DependencyInjectionServlet {
     @Inject("dao")
     VacancyDao dao;
 
+    VacancyParser parser = new VacancyParserImpl(new Provider(new HHStrategy()), new Provider(new MoikrugStrategy()));
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String searchString = request.getParameter("searchString");
         logger.trace("Searching for \"" + searchString + "\"");
-        List<Vacancy> searchResults = dao.selectAll();
+        List<Vacancy> searchResults = parser.selectCity("Moscow");
         request.setAttribute("vacancies", searchResults);
         logger.trace(searchResults.size() + " results found");
         request.getRequestDispatcher("results.jsp").forward(request, response);

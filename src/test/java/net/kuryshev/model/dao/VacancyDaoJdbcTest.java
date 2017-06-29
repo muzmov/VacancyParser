@@ -74,5 +74,4 @@ public class VacancyDaoJdbcTest {
         Assert.assertNotNull(vacancies);
         Assert.assertEquals(vacancies.size(), 0);
     }
-
 }
