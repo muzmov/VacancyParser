@@ -2,18 +2,16 @@ package net.kuryshev.controller;
 
 import net.kuryshev.controller.di.DependencyInjectionServlet;
 import net.kuryshev.controller.di.Inject;
-import net.kuryshev.model.Vacancy;
+import net.kuryshev.model.entity.Vacancy;
 import net.kuryshev.model.VacancyParser;
 import net.kuryshev.model.VacancyParserImpl;
 import net.kuryshev.model.dao.VacancyDao;
-import net.kuryshev.model.dao.VacancyDaoJdbc;
 import net.kuryshev.model.strategy.HHStrategy;
 import net.kuryshev.model.strategy.MoikrugStrategy;
 import net.kuryshev.model.strategy.Provider;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;

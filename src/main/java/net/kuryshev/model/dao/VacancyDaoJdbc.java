@@ -1,12 +1,12 @@
 package net.kuryshev.model.dao;
 
 
-import net.kuryshev.model.Vacancy;
+import net.kuryshev.model.entity.Company;
+import net.kuryshev.model.entity.Vacancy;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
@@ -17,7 +17,7 @@ public class VacancyDaoJdbc implements VacancyDao {
 
     //TODO: move settings to property file
     private static final String DRIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
-    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/vacancyparser?useSSL=false";
+    private static String JDBC_URL = "jdbc:mysql://localhost:3306/vacancyparser?useSSL=false";
     private static final String user = "root";
     private static final String password = "password";
 
@@ -26,12 +26,14 @@ public class VacancyDaoJdbc implements VacancyDao {
     private static final String SELECT_CONTAINING_TITLE_SQL  = "SELECT * FROM Vacancies WHERE title LIKE '%?%'";
     private static final String SELECT_CONTAINING_DESCRIPTION_SQL  = "SELECT * FROM Vacancies WHERE description LIKE '%?%'";
     private static final String SELECT_CONTAINING_TITLE_OR_DESCRIPTION_SQL  = "SELECT * FROM Vacancies WHERE title LIKE '%?%' OR description LIKE '%?%'";
+    private static final String SELECT_COMPANY_BY_NAME_SQL = "SELECT * FROM Companies WHERE name = '?'";
     //TODO refactor this
-    private static final String INSERT_VACANCY_SQL = "INSERT INTO Vacancies VALUES ('?1', '?2', '?3', '?4', '?5', '?6', ?7, '?8')";
+    private static final String INSERT_VACANCY_SQL = "INSERT INTO Vacancies (title, description, url, site_name, city, company, salary, rating) VALUES ('?1', '?2', '?3', '?4', '?5', '?6', '?7', ?8)";
+    private static final String INSERT_COMPANY_SQL = "INSERT INTO Companies (name, url, rating, reviews_url) VALUES ('?1', '?2', ?3, '?4')";
 
-    private static Connection con;
-    private static Statement stmt;
-    private static ResultSet rs;
+    private static Connection con, conCompany;
+    private static Statement stmt, stmtCompany;
+    private static ResultSet rs, rsCompany;
 
     static {
         try {
@@ -50,6 +52,7 @@ public class VacancyDaoJdbc implements VacancyDao {
     public List<Vacancy> selectContaining(String query, boolean inTitle, boolean inDescription) {
         List<Vacancy> vacancies = new ArrayList<>();
         String sql = null;
+
         //Select all if inTitle == false and inDescription == false
         if (!inTitle && !inDescription) sql = SELECT_ALL_SQL;
         if (inTitle && !inDescription) sql = SELECT_CONTAINING_TITLE_SQL.replaceAll("\\?", query);
@@ -61,14 +64,33 @@ public class VacancyDaoJdbc implements VacancyDao {
             stmt = con.createStatement();
             rs = stmt.executeQuery(sql);
 
+            Map<String, Company> companyMap = new HashMap<>();
+
+            conCompany = DriverManager.getConnection(JDBC_URL, user, password);
+            stmtCompany = conCompany.createStatement();
+
             while (rs.next()) {
                 Vacancy vacancy = new Vacancy();
                 vacancy.setCity(rs.getString("city"));
-                vacancy.setCompanyName(rs.getString("companyName"));
                 vacancy.setSalary(rs.getString("salary"));
-                vacancy.setSiteName(rs.getString("siteName"));
+                vacancy.setSiteName(rs.getString("site_name"));
                 vacancy.setTitle(rs.getString("title"));
                 vacancy.setUrl(rs.getString("url"));
+                vacancy.setRating(rs.getDouble("rating"));
+                vacancy.setDescription(rs.getString("description"));
+
+                //getting company info
+                String companyName = rs.getString("company");
+                Company company;
+                if ((company = companyMap.get(companyName)) == null) {
+                    sql = SELECT_COMPANY_BY_NAME_SQL.replaceAll("\\?", companyName);
+                    rsCompany = stmtCompany.executeQuery(sql);
+                    if (rsCompany.next()) {
+                        company = new Company(rsCompany.getString("name"), rsCompany.getString("url"), rsCompany.getString("reviews_url"), rsCompany.getDouble("rating"));
+                        companyMap.put(companyName, company);
+                    }
+                }
+                vacancy.setCompany(company);
                 vacancies.add(vacancy);
             }
 
@@ -76,14 +98,20 @@ public class VacancyDaoJdbc implements VacancyDao {
             sqlEx.printStackTrace();
         } finally {
             try { con.close(); } catch(SQLException se) { /*can't do anything */ }
+            try { conCompany.close(); } catch(SQLException se) { /*can't do anything */ }
             try { stmt.close(); } catch(SQLException se) { /*can't do anything */ }
+            try { stmtCompany.close(); } catch(SQLException se) { /*can't do anything */ }
             try { rs.close(); } catch(SQLException se) { /*can't do anything */ }
+            try { rsCompany.close(); } catch(SQLException | NullPointerException se) { /*can't do anything */ }
         }
+
         return vacancies;
     }
 
     @Override
-    public void delete(int id) {}
+    public void delete(int id) {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public void deleteAll() {
@@ -99,16 +127,39 @@ public class VacancyDaoJdbc implements VacancyDao {
         }
     }
 
+//(title, description, url, site_name, city, company_id, salary, rating)
     @Override
     public void add(Vacancy vacancy) {
+
         String sql = INSERT_VACANCY_SQL.replaceAll("\\?1", vacancy.getTitle());
-        sql = sql.replaceAll("\\?2", vacancy.getUrl());
-        sql = sql.replaceAll("\\?3", vacancy.getSiteName());
-        sql = sql.replaceAll("\\?4", vacancy.getCity());
-        sql = sql.replaceAll("\\?5", vacancy.getCompanyName());
-        sql = sql.replaceAll("\\?6", vacancy.getSalary());
-        sql = sql.replaceAll("\\?7", "0");
-        sql = sql.replaceAll("\\?8", "");
+        sql = sql.replaceAll("\\?2", vacancy.getDescription());
+        sql = sql.replaceAll("\\?3", vacancy.getUrl());
+        sql = sql.replaceAll("\\?4", vacancy.getSiteName());
+        sql = sql.replaceAll("\\?5", vacancy.getCity());
+        sql = sql.replaceAll("\\?6", vacancy.getCompany().getName());
+        sql = sql.replaceAll("\\?7", vacancy.getSalary());
+        sql = sql.replaceAll("\\?8", vacancy.getRating() + "");
+
+        try {
+            conCompany = DriverManager.getConnection(JDBC_URL, user, password);
+            stmtCompany = conCompany.createStatement();
+            rsCompany = stmtCompany.executeQuery(SELECT_COMPANY_BY_NAME_SQL.replaceAll("\\?", vacancy.getCompany().getName()));
+            if (!rsCompany.next()) {
+                String sqlCompany = INSERT_COMPANY_SQL.replaceAll("\\?1", vacancy.getCompany().getName());
+                sqlCompany = sqlCompany.replaceAll("\\?2", vacancy.getCompany().getUrl());
+                sqlCompany = sqlCompany.replaceAll("\\?3", vacancy.getCompany().getRating() + "");
+                sqlCompany = sqlCompany.replaceAll("\\?4", vacancy.getCompany().getRewiewsUrl());
+                stmtCompany.executeUpdate(sqlCompany);
+            }
+        } catch (SQLException sqlEx) {
+            sqlEx.printStackTrace();
+        } finally {
+            try { conCompany.close(); } catch(SQLException se) { /*can't do anything */ }
+            try { stmtCompany.close(); } catch(SQLException se) { /*can't do anything */ }
+            try { rsCompany.close(); } catch(SQLException se) { /*can't do anything */ }
+        }
+
+
         try {
             con = DriverManager.getConnection(JDBC_URL, user, password);
             stmt = con.createStatement();
@@ -123,18 +174,36 @@ public class VacancyDaoJdbc implements VacancyDao {
 
     @Override
     public void addAll(List<Vacancy> vacancies) {
+        Set<String> companyNameSet = new HashSet<>();
         try {
             con = DriverManager.getConnection(JDBC_URL, user, password);
             stmt = con.createStatement();
+
+            conCompany = DriverManager.getConnection(JDBC_URL, user, password);
+            stmtCompany = conCompany.createStatement();
+
             for (Vacancy vacancy : vacancies) {
                 String sql = INSERT_VACANCY_SQL.replaceAll("\\?1", vacancy.getTitle());
-                sql = sql.replaceAll("\\?2", vacancy.getUrl());
-                sql = sql.replaceAll("\\?3", vacancy.getSiteName());
-                sql = sql.replaceAll("\\?4", vacancy.getCity());
-                sql = sql.replaceAll("\\?5", vacancy.getCompanyName());
-                sql = sql.replaceAll("\\?6", vacancy.getSalary());
-                sql = sql.replaceAll("\\?7", "0");
-                sql = sql.replaceAll("\\?8", "");
+                sql = sql.replaceAll("\\?2", vacancy.getDescription());
+                sql = sql.replaceAll("\\?3", vacancy.getUrl());
+                sql = sql.replaceAll("\\?4", vacancy.getSiteName());
+                sql = sql.replaceAll("\\?5", vacancy.getCity());
+                sql = sql.replaceAll("\\?6", vacancy.getCompany().getName());
+                sql = sql.replaceAll("\\?7", vacancy.getSalary());
+                sql = sql.replaceAll("\\?8", vacancy.getRating() + "");
+
+                if (!companyNameSet.contains(vacancy.getCompany().getName())) {
+                    rsCompany = stmtCompany.executeQuery(SELECT_COMPANY_BY_NAME_SQL.replaceAll("\\?", vacancy.getCompany().getName()));
+                    if (!rsCompany.next()) {
+                        String sqlCompany = INSERT_COMPANY_SQL.replaceAll("\\?1", vacancy.getCompany().getName());
+                        sqlCompany = sqlCompany.replaceAll("\\?2", vacancy.getCompany().getUrl());
+                        sqlCompany = sqlCompany.replaceAll("\\?3", vacancy.getCompany().getRating() + "");
+                        sqlCompany = sqlCompany.replaceAll("\\?4", vacancy.getCompany().getRewiewsUrl());
+                        stmtCompany.executeUpdate(sqlCompany);
+                    }
+                    companyNameSet.add(vacancy.getCompany().getName());
+                }
+
                 stmt.executeUpdate(sql);
             }
         } catch (SQLException sqlEx) {

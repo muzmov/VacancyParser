@@ -2,6 +2,7 @@ package net.kuryshev.model;
 
 import net.kuryshev.model.dao.VacancyDao;
 import net.kuryshev.model.dao.VacancyDaoJdbc;
+import net.kuryshev.model.entity.Vacancy;
 import net.kuryshev.model.strategy.Provider;
 import org.apache.log4j.Logger;
 

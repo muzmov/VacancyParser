@@ -1,6 +1,7 @@
 package net.kuryshev.model.dao;
 
-import net.kuryshev.model.Vacancy;
+import net.kuryshev.model.entity.Company;
+import net.kuryshev.model.entity.Vacancy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ public class VacancyDaoMock implements VacancyDao {
     public List<Vacancy> selectAll() {
         List<Vacancy> result = new ArrayList<Vacancy>();
         for (int i = 0; i < 10; i++) {
-            result.add(new Vacancy("mockTitle" + i, "mockSalary", "mockCity" + i, "mockCompanyName" + i, "mockSitename" + i, "mockUrl" + i));
+            result.add(new Vacancy("test" + i, "test" + i,"test" + i,"test" + i,"test" + i,"test" + i, 5, new Company()));
         }
         return result;
     }

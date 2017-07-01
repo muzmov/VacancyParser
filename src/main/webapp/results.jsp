@@ -1,5 +1,5 @@
 <%@ page import="java.util.List" %>
-<%@ page import="net.kuryshev.model.Vacancy" %>
+<%@ page import="net.kuryshev.model.entity.Vacancy" %>
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!doctype html>
@@ -23,7 +23,7 @@
     <tr class="vacancy">
         <td class="title"><a href="<%=vacancy.getUrl()%>"><%=vacancy.getTitle()%></a></td>
         <td class="city"><%=vacancy.getCity()%></td>
-        <td class="companyName"><%=vacancy.getCompanyName()%></td>
+        <td class="companyName"><%=vacancy.getCompany().getName()%></td>
         <td class="salary"><%=vacancy.getSalary()%></td>
     </tr>
 

@@ -1,6 +1,6 @@
 package net.kuryshev.model.strategy;
 
-import net.kuryshev.model.Vacancy;
+import net.kuryshev.model.entity.Vacancy;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -33,16 +33,22 @@ public class MoikrugStrategy implements Strategy {
             if (vacancies.size() == 0) break;
             for (Element element : vacancies) {
                 if (element != null) {
-                    Vacancy vac = new Vacancy();
-                    vac.setTitle(element.getElementsByAttributeValue("class", "title").text());
-                    vac.setCompanyName(element.getElementsByAttributeValue("class", "company_name").text());
-                    vac.setSiteName(URL_FORMAT);
-                    vac.setUrl("https://moikrug.ru" + element.select("a[class=job_icon]").attr("href"));
+                    Vacancy vacancy = new Vacancy();
+
+                    //parsing vacancy
+                    vacancy.setTitle(element.getElementsByAttributeValue("class", "title").text());
+                    vacancy.setSiteName(URL_FORMAT);
+                    vacancy.setUrl("https://moikrug.ru" + element.select("a[class=job_icon]").attr("href"));
                     String salary = element.getElementsByAttributeValue("class", "salary").text();
                     String city = element.getElementsByAttributeValue("class", "location").text();
-                    vac.setSalary(salary.length() == 0 ? "" : salary);
-                    vac.setCity(city.length() == 0 ? "" : city);
-                    Vacancies.add(vac);
+                    vacancy.setSalary(salary.length() == 0 ? "" : salary);
+                    vacancy.setCity(city.length() == 0 ? "" : city);
+
+                    //parsing company
+                    //TODO: properly parse company
+                    String companyName = element.getElementsByAttributeValue("class", "company_name").text();
+
+                    Vacancies.add(vacancy);
                 }
             }
             page++;

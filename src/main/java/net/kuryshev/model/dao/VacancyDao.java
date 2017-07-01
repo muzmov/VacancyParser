@@ -1,6 +1,6 @@
 package net.kuryshev.model.dao;
 
-import net.kuryshev.model.Vacancy;
+import net.kuryshev.model.entity.Vacancy;
 
 import java.util.List;
 
