@@ -34,12 +34,17 @@ public class HHStrategy implements Strategy {
         //TODO remove this page < 10 condition (it's here only for testing)
         while (page < 10) {
             try {
+                logger.debug("Parsing page #" + page);
                 Document doc = getDocument(searchString, page++);
                 Elements elements = null;
                 if (doc != null) {
-                    elements = doc.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy");
+                    elements = doc.getElementsByAttributeValueMatching("data-qa", "vacancy-serp__vacancy( |$).*");
                 }
-                if (elements == null || elements.isEmpty()) break;
+                if (elements == null || elements.isEmpty()) {
+                    logger.debug("All pages (" + (page - 1) + ") visited");
+                    break;
+                }
+                logger.debug(elements.size() + " elements found");
                 for (Element element : elements) {
                     Vacancy vacancy = new Vacancy();
 
@@ -47,7 +52,7 @@ public class HHStrategy implements Strategy {
                     vacancy.setCity(element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-address").text());
                     vacancy.setTitle(element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-title").text());
                     vacancy.setSiteName("hh.ru");
-                    vacancy.setUrl(element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-title").get(0).attr("href"));
+                    vacancy.setUrl(element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-title").attr("href"));
                     if (element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-compensation") != null)
                         vacancy.setSalary(element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-compensation").text());
                     else
@@ -63,7 +68,7 @@ public class HHStrategy implements Strategy {
                     if ((company = companies.get(companyName)) == null) {
                         company = new Company();
                         company.setName(companyName);
-                        company.setUrl(element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-employer").attr("href"));
+                        company.setUrl("http://hh.ru" + element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-employer").attr("href"));
 
                         //TODO: set rewiewsUrl and rating
                         company.setRating(0);
@@ -76,7 +81,7 @@ public class HHStrategy implements Strategy {
                     result.add(vacancy);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("IOException occurred during parsing on page " + page);
             }
         }
         return result;

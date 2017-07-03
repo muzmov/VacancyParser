@@ -86,4 +86,9 @@ public class Company {
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Company{" + "name='" + name + '\'' + ", url='" + url + '\'' + ", rewiewsUrl='" + rewiewsUrl + '\'' + ", rating=" + rating + '}';
+    }
 }

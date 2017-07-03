@@ -27,14 +27,14 @@ CREATE TABLE Companies (
   reviews_url TEXT
 );
 
-INSERT INTO Companies (name, url, rating, reviews_url)
-VALUES
-  ('GlowByte', 'http://glowbyte.com', 4.4, 'http://linktoreviews.ru'),
-  ('I-TECO', 'http://i-teco.com', 4.4, 'http://linktoreviews.ru'),
-  ('Rostelecom', 'http://rostele.com', 4.4, 'http://linktoreviews.ru');
-
-INSERT INTO Vacancies (title, description, url, site_name, city, company, salary, rating)
-VALUES
-  ('Vacancy #1', 'primitive description', 'http://hh/.ru', 'hh.ru', 'Moscow', 'GlowByte', '100 000 - 150 000 roubles', 4.4),
-  ('Vacancy #2', 'primitive description', 'http://hh/.ru', 'hh.ru', 'Moscow', 'I-TECO', '10 000 - 150 000 roubles', 4.5),
-  ('Vacancy #3', 'primitive description', 'http://hh/.ru', 'hh.ru', 'Moscow', 'Rostelecom', '10 000 - 15 000 roubles', 4.6);
+# INSERT INTO Companies (name, url, rating, reviews_url)
+# VALUES
+#   ('GlowByte', 'http://glowbyte.com', 4.4, 'http://linktoreviews.ru'),
+#   ('I-TECO', 'http://i-teco.com', 4.4, 'http://linktoreviews.ru'),
+#   ('Rostelecom', 'http://rostele.com', 4.4, 'http://linktoreviews.ru');
+#
+# INSERT INTO Vacancies (title, description, url, site_name, city, company, salary, rating)
+# VALUES
+#   ('Vacancy #1', 'primitive description', 'http://hh/.ru', 'hh.ru', 'Moscow', 'GlowByte', '100 000 - 150 000 roubles', 4.4),
+#   ('Vacancy #2', 'primitive description', 'http://hh/.ru', 'hh.ru', 'Moscow', 'I-TECO', '10 000 - 150 000 roubles', 4.5),
+#   ('Vacancy #3', 'primitive description', 'http://hh/.ru', 'hh.ru', 'Moscow', 'Rostelecom', '10 000 - 15 000 roubles', 4.6);

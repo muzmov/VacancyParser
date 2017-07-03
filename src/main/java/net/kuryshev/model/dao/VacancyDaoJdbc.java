@@ -133,7 +133,7 @@ public class VacancyDaoJdbc implements VacancyDao {
                 stmtCompany.executeUpdate(sqlUpdateCompany);
             }
         } catch (SQLException sqlEx) {
-            sqlEx.printStackTrace();
+            logger.error("SQL exception occured in addAll: " + sqlEx.getMessage());
         } finally {
             try { con.close(); } catch(SQLException se) { /*can't do anything */ }
             try { stmtCompany.close(); } catch(SQLException se) { /*can't do anything */ }
@@ -146,29 +146,38 @@ public class VacancyDaoJdbc implements VacancyDao {
     @Override
     public void addAll(List<Vacancy> vacancies) {
         Set<String> companyNameSet = new HashSet<>();
+        logger.debug("Adding a bunch (" + vacancies.size() + ") of vacancies to DB");
+
+        int addedVacanciesCounter = 0;
         try {
             con = DriverManager.getConnection(JDBC_URL, user, password);
             stmt = con.createStatement();
-            stmtCompany = con.createStatement();
 
             for (Vacancy vacancy : vacancies) {
-                String sql = getInsertVacancySql(vacancy);
-                if (!companyNameSet.contains(vacancy.getCompany().getName())) {
-                    rsCompany = stmtCompany.executeQuery(SELECT_COMPANY_BY_NAME_SQL.replaceAll("\\?", vacancy.getCompany().getName()));
-                    if (!rsCompany.next()) {
-                        String sqlCompany = getInsertCompanySql(vacancy);
-                        stmtCompany.executeUpdate(sqlCompany);
+                try {
+                    if (!companyNameSet.contains(vacancy.getCompany().getName())) {
+                        rsCompany = stmt.executeQuery(SELECT_COMPANY_BY_NAME_SQL.replaceAll("\\?", vacancy.getCompany().getName()));
+                        if (!rsCompany.next()) {
+                            String sqlCompany = getInsertCompanySql(vacancy);
+                            stmt.executeUpdate(sqlCompany);
+                        }
+                        rsCompany.close();
+                        companyNameSet.add(vacancy.getCompany().getName());
                     }
-                    companyNameSet.add(vacancy.getCompany().getName());
+                    String sql = getInsertVacancySql(vacancy);
+                    stmt.executeUpdate(sql);
+                    ++addedVacanciesCounter;
+                } catch (SQLException e) {
+                    logger.error("SQL data exception occured in addAll: " + e.getMessage() + ". On vacancy: " + vacancy);
                 }
-                stmt.executeUpdate(sql);
             }
         } catch (SQLException sqlEx) {
-            sqlEx.printStackTrace();
+            logger.error("Major SQL exception occured in addAll: " + sqlEx.getMessage());
         } finally {
-            try { con.close(); } catch(SQLException se) { /*can't do anything */ }
-            try { stmt.close(); } catch(SQLException se) { /*can't do anything */ }
+            try { con.close(); } catch(SQLException se) { logger.error("Can not close connection. Error: " + se.getMessage());}
+            try { stmt.close(); } catch(SQLException se) { logger.error("Can not close statement. Error: " + se.getMessage()); }
         }
+        logger.trace(addedVacanciesCounter + " vacancies added");
     }
 
     private String getInsertCompanySql(Vacancy vacancy) {
