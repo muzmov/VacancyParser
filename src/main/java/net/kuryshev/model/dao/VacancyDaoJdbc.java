@@ -85,7 +85,11 @@ public class VacancyDaoJdbc implements VacancyDao {
                     String sqlCompany = SELECT_COMPANY_BY_NAME_SQL.replaceAll("\\?", companyName);
                     rsCompany = stmtCompany.executeQuery(sqlCompany);
                     if (rsCompany.next()) {
-                        company = new Company(rsCompany.getString("name"), rsCompany.getString("url"), rsCompany.getString("reviews_url"), rsCompany.getDouble("rating"));
+                        company = new Company();
+                        company.setName(rsCompany.getString("name"));
+                        company.setUrl(rsCompany.getString("url"));
+                        company.setRewiewsUrl(rsCompany.getString("reviews_url"));
+                        company.setRating(rsCompany.getDouble("rating"));
                         companyMap.put(companyName, company);
                     }
                 }
