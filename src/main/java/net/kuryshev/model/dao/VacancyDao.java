@@ -1,5 +1,6 @@
 package net.kuryshev.model.dao;
 
+import net.kuryshev.model.SearchParams;
 import net.kuryshev.model.entity.Vacancy;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
 public interface VacancyDao {
     List<Vacancy> selectAll();
 
-    List<Vacancy> selectContaining(String query, boolean inTitle, boolean inDescription);
+    List<Vacancy> selectContaining(String query, SearchParams params);
 
     void delete(int id);
 

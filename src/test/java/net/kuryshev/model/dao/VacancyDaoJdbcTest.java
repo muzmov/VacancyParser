@@ -1,5 +1,6 @@
 package net.kuryshev.model.dao;
 
+import net.kuryshev.model.SearchParams;
 import net.kuryshev.model.entity.Company;
 import net.kuryshev.model.entity.Vacancy;
 import org.junit.After;
@@ -119,7 +120,7 @@ public class VacancyDaoJdbcTest {
             vacancies.add(vacancy);
         }
         dao.addAll(vacancies);
-        vacancies = dao.selectContaining("1", true, false);
+        vacancies = dao.selectContaining("1", SearchParams.SEARCH_IN_TITLE);
         Assert.assertNotNull(vacancies);
         Assert.assertEquals(vacancies.size(), 19);
     }
