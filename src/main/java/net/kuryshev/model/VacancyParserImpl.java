@@ -39,7 +39,7 @@ public class VacancyParserImpl implements VacancyParser {
         for (Provider provider : providers)
             vacancies.addAll(provider.getVacanciesContaining(query));
         Date date2 = new Date();
-        logger.trace("All vacancies parsed in " + (date2.getTime() - date1.getTime()) + "ms");
+        logger.trace("All vacancies (" + vacancies.size() + ") parsed in " + (date2.getTime() - date1.getTime()) + "ms");
         date1 = new Date();
         dao.addAll(vacancies);
         date2 = new Date();

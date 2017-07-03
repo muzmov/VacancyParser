@@ -2,13 +2,10 @@ package net.kuryshev.controller;
 
 import net.kuryshev.controller.di.DependencyInjectionServlet;
 import net.kuryshev.controller.di.Inject;
-import net.kuryshev.model.entity.Vacancy;
+import net.kuryshev.model.SearchParams;
 import net.kuryshev.model.VacancyParser;
-import net.kuryshev.model.VacancyParserImpl;
 import net.kuryshev.model.dao.VacancyDao;
-import net.kuryshev.model.strategy.HHStrategy;
-import net.kuryshev.model.strategy.MoikrugStrategy;
-import net.kuryshev.model.strategy.Provider;
+import net.kuryshev.model.entity.Vacancy;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
@@ -16,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
@@ -40,22 +36,15 @@ public class SearchController extends DependencyInjectionServlet {
         int numProviders = (hh?1:0) + (moikrug?1:0);
         int numPlacesToSearch = (inTitle?1:0) + (inDescription?1:0);
 
-        logger.debug(numProviders + " providers and " + numPlacesToSearch + " places to search selected");
-
-        if (numProviders == 0 || numPlacesToSearch == 0 || searchString == null || searchString.isEmpty()) {
-            request.setAttribute("error", "You should input a non empty query and choose at least one option from sites and one option from where to search (title, description)");
-            request.getRequestDispatcher("error.jsp").forward(request, response);
-            return;
+        SearchParams params = SearchParams.SELECT_ALL;
+        if (numPlacesToSearch == 2) params = SearchParams.SEARCH_IN_TITLE_AND_DESCRIPTION;
+        if (numPlacesToSearch == 1) {
+            if (inTitle) params = SearchParams.SEARCH_IN_TITLE;
+            if (inDescription) params = SearchParams.SEARCH_IN_DESCRIPTION;
         }
 
-        Provider[] providers = new Provider[numProviders];
-        int i = 0;
-        if (hh) providers[i++] = new Provider(new HHStrategy());
-        if (moikrug) providers[i++] = new Provider(new MoikrugStrategy());
-
-        parser = new VacancyParserImpl(providers);
         logger.trace("Searching for \"" + searchString + "\" in " + (moikrug?"moikrug ":"") + (hh?"hh ":"") + (inTitle?"in title ":"") + (inDescription?"in description":""));
-        List<Vacancy> searchResults = parser.searchContaining(searchString, inTitle, inDescription);
+        List<Vacancy> searchResults = dao.selectContaining(searchString, params);
         request.setAttribute("vacancies", searchResults);
         logger.trace(searchResults.size() + " results found");
         request.getRequestDispatcher("results.jsp").forward(request, response);

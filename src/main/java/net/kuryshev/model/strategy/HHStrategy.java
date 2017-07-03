@@ -2,6 +2,7 @@ package net.kuryshev.model.strategy;
 
 import net.kuryshev.model.entity.Company;
 import net.kuryshev.model.entity.Vacancy;
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -13,12 +14,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static net.kuryshev.Utils.ClassUtils.getClassName;
+
 /**
  * Created by 1 on 08.06.2017.
  */
 public class HHStrategy implements Strategy {
     private final static String URL_FORMAT =
             "http://hh.ru/search/vacancy?text=%s&page=%d";
+    private static Logger logger = Logger.getLogger(getClassName());
 
 
     @Override
@@ -81,10 +85,11 @@ public class HHStrategy implements Strategy {
     private Document getDocument(String searchString, int page) throws IOException {
         Document doc = null;
         String url = String.format(URL_FORMAT, searchString, page);
+        if (page == 1) logger.debug("Starting to get pages contents from " + url);
         try {
             doc = Jsoup.connect(url).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").referrer("none").get();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Some error occurred when parsing from " + url + ". Error info: " + e.getMessage());
         }
         return doc;
     }

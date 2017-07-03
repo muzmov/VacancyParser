@@ -23,6 +23,7 @@ public class VacancyDaoJdbc implements VacancyDao {
     private static final String password = "password";
 
     private static final String SELECT_ALL_SQL  = "SELECT * FROM Vacancies";
+    //TODO: set safe update = 0 before deleting
     private static final String DELETE_ALL_SQL  = "DELETE FROM Vacancies";
     private static final String SELECT_CONTAINING_TITLE_SQL  = "SELECT * FROM Vacancies WHERE title LIKE '%?%'";
     private static final String SELECT_CONTAINING_DESCRIPTION_SQL  = "SELECT * FROM Vacancies WHERE description LIKE '%?%'";
@@ -125,10 +126,11 @@ public class VacancyDaoJdbc implements VacancyDao {
         try {
             con = DriverManager.getConnection(JDBC_URL, user, password);
             stmtCompany = con.createStatement();
-            rsCompany = stmtCompany.executeQuery(SELECT_COMPANY_BY_NAME_SQL.replaceAll("\\?", vacancy.getCompany().getName()));
+            String sqlSelectCompany = SELECT_COMPANY_BY_NAME_SQL.replaceAll("\\?", vacancy.getCompany().getName());
+            rsCompany = stmtCompany.executeQuery(sqlSelectCompany);
             if (!rsCompany.next()) {
-                String sqlCompany = getInsertCompanySql(vacancy);
-                stmtCompany.executeUpdate(sqlCompany);
+                String sqlUpdateCompany = getInsertCompanySql(vacancy);
+                stmtCompany.executeUpdate(sqlUpdateCompany);
             }
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
