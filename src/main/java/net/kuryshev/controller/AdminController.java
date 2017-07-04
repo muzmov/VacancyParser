@@ -22,17 +22,14 @@ public class AdminController extends DependencyInjectionServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String searchString = request.getParameter("searchString");
-        boolean inTitle = request.getParameter("title") != null;
-        boolean inDescription = request.getParameter("description") != null;
         boolean hh = request.getParameter("hh") != null;
         boolean moikrug = request.getParameter("moikrug") != null;
         int numProviders = (hh?1:0) + (moikrug?1:0);
-        int numPlacesToSearch = (inTitle?1:0) + (inDescription?1:0);
 
-        logger.debug(numProviders + " providers and " + numPlacesToSearch + " places to search selected");
+        logger.debug(numProviders + " providers selected");
 
-        if (numProviders == 0 || numPlacesToSearch == 0 || searchString == null || searchString.isEmpty()) {
-            request.setAttribute("error", "You should input a non empty query and choose at least one option from sites and one option from where to search (title, description)");
+        if (numProviders == 0 || searchString == null || searchString.isEmpty()) {
+            request.setAttribute("error", "You should input a non empty query and choose at least one option from sites");
             request.getRequestDispatcher("error.jsp").forward(request, response);
             return;
         }
@@ -43,10 +40,10 @@ public class AdminController extends DependencyInjectionServlet {
         if (moikrug) providers[i++] = new Provider(new MoikrugStrategy());
 
         VacancyParser parser = new VacancyParserImpl(providers);
-        logger.trace("Searching for \"" + searchString + "\" in " + (moikrug?"moikrug ":"") + (hh?"hh ":"") + (inTitle?"in title ":"") + (inDescription?"in description":""));
-        List<Vacancy> searchResults = parser.searchContaining(searchString, inTitle, inDescription);
+        logger.debug("Searching for \"" + searchString + "\" in " + (moikrug?"moikrug ":"") + (hh?"hh ":""));
+        List<Vacancy> searchResults = parser.searchContaining(searchString);
         request.setAttribute("vacancies", searchResults);
-        logger.trace(searchResults.size() + " results found");
+        logger.debug(searchResults.size() + " results found");
         request.getRequestDispatcher("results.jsp").forward(request, response);
     }
 }

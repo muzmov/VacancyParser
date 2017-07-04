@@ -28,7 +28,7 @@ public class VacancyParserImpl implements VacancyParser {
     }
 
     @Override
-    public List<Vacancy> searchContaining(String query, boolean inTitle, boolean inDescription) {
+    public List<Vacancy> searchContaining(String query) {
         query = query.replaceAll(" ", "+");
         List<Vacancy> vacancies = new ArrayList<>();
         String strategiesString = "";
