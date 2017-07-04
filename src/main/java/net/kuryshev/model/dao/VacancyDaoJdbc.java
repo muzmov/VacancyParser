@@ -167,8 +167,8 @@ public class VacancyDaoJdbc implements VacancyDao {
                     String sql = getInsertVacancySql(vacancy);
                     stmt.executeUpdate(sql);
                     ++addedVacanciesCounter;
-                } catch (SQLException e) {
-                    logger.error("SQL data exception occured in addAll: " + e.getMessage() + ". On vacancy: " + vacancy);
+                } catch (Exception e) {
+                    logger.error("Exception while trying to add vacancy to database: " + e.getMessage() + ". On vacancy: " + vacancy);
                 }
             }
         } catch (SQLException sqlEx) {
