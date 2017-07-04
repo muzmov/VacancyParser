@@ -1,8 +1,5 @@
 package net.kuryshev.model.entity;
 
-/**
- * Created by 1 on 25.06.2017.
- */
 public class Vacancy {
     private int id;
     private String title, description, salary, city, siteName, url;

@@ -12,9 +12,6 @@ import java.util.List;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
-/**
- * Created by 1 on 28.06.2017.
- */
 public class VacancyParserImpl implements VacancyParser {
     private static Logger logger = Logger.getLogger(getClassName());
 

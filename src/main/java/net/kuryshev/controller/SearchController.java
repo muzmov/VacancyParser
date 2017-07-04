@@ -15,9 +15,6 @@ import java.util.List;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
-/**
- * Created by 1 on 25.06.2017.
- */
 public class SearchController extends DependencyInjectionServlet {
     private Logger logger = Logger.getLogger(getClassName());
 

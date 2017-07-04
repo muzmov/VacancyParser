@@ -5,9 +5,6 @@ import net.kuryshev.model.entity.Vacancy;
 
 import java.util.List;
 
-/**
- * Created by 1 on 25.06.2017.
- */
 public interface VacancyDao {
     List<Vacancy> selectAll();
 

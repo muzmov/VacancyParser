@@ -4,7 +4,7 @@ import net.kuryshev.controller.di.DependencyInjectionServlet;
 import net.kuryshev.model.VacancyParser;
 import net.kuryshev.model.VacancyParserImpl;
 import net.kuryshev.model.entity.Vacancy;
-import net.kuryshev.model.strategy.HHStrategy;
+import net.kuryshev.model.strategy.HhStrategy;
 import net.kuryshev.model.strategy.MoikrugStrategy;
 import net.kuryshev.model.strategy.Provider;
 import org.apache.log4j.Logger;
@@ -36,8 +36,8 @@ public class AdminController extends DependencyInjectionServlet {
 
         Provider[] providers = new Provider[numProviders];
         int i = 0;
-        if (hh) providers[i++] = new Provider(new HHStrategy());
-        if (moikrug) providers[i++] = new Provider(new MoikrugStrategy());
+        if (hh) providers[i++] = new Provider(new HhStrategy());
+        if (moikrug) providers[i] = new Provider(new MoikrugStrategy());
 
         VacancyParser parser = new VacancyParserImpl(providers);
         logger.debug("Searching for \"" + searchString + "\" in " + (moikrug?"moikrug ":"") + (hh?"hh ":""));

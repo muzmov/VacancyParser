@@ -6,9 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-/**
- * Created by 1 on 25.06.2017.
- */
 public class SimpleController extends HttpServlet{
 
     @Override

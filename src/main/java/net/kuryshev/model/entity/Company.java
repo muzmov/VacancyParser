@@ -1,8 +1,5 @@
 package net.kuryshev.model.entity;
 
-/**
- * Created by 1 on 01.07.2017.
- */
 public class Company {
     private int id;
     private String name, url, rewiewsUrl;

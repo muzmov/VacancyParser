@@ -13,14 +13,14 @@ import java.util.Map;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
-public class MoikrugStrategy extends AbstractStrategy {
-    private static final String URL_FORMAT = "https://moikrug.ru/vacancies?q=%s&page=%d";
+public class HhStrategy extends AbstractStrategy {
+    private final static String URL_FORMAT = "http://hh.ru/search/vacancy?text=%s&page=%d";
     private static Logger logger = Logger.getLogger(getClassName());
     private Map<String, Company> companies = new HashMap<>();
 
     @Override
     protected Document getDocument(String searchString, int page) throws IOException {
-        String url = String.format(URL_FORMAT, searchString, page);
+        String url = String.format(URL_FORMAT, searchString, page + 1);
         return getDocument(url);
     }
 
@@ -34,27 +34,29 @@ public class MoikrugStrategy extends AbstractStrategy {
 
     @Override
     protected String parseTitle(Element element) {
-        return element.getElementsByAttributeValue("class", "title").text();
+        return element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-title").text();
     }
 
     @Override
     protected String parseSalary(Element element) {
-        return element.getElementsByAttributeValue("class", "salary").text();
+        if (element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-compensation") != null)
+            return element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-compensation").text();
+        else return "";
     }
 
     @Override
     protected String parseCity(Element element) {
-        return element.getElementsByAttributeValue("class", "location").text();
+        return element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-address").text();
     }
 
     @Override
     protected String parseSiteName() {
-        return "moikrug.ru";
+        return "hh.ru";
     }
 
     @Override
     protected String parseUrl(Element element) {
-        return "https://moikrug.ru" + element.select("a[class=job_icon]").attr("href");
+        return element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-title").attr("href");
     }
 
     @Override
@@ -64,17 +66,16 @@ public class MoikrugStrategy extends AbstractStrategy {
 
     @Override
     protected Company parseCompany(Element element) {
-        String companyName = element.getElementsByAttributeValue("class", "company_name").text();
+        String companyName = element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-employer").text();
         Company company;
         if ((company = companies.get(companyName)) == null) {
             company = new Company();
             company.setName(companyName);
-            company.setUrl("https://moikrug.ru" + element.getElementsByAttributeValue("class", "company_name").attr("href"));
+            company.setUrl("http://hh.ru" + element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-employer").attr("href"));
 
             //TODO: set rewiewsUrl and rating
             company.setRating(0);
             company.setRewiewsUrl("");
-
             companies.put(companyName, company);
         }
         return company;
@@ -86,7 +87,7 @@ public class MoikrugStrategy extends AbstractStrategy {
         String description = "";
         try {
             Document document = getDocument(url);
-            description = document.getElementsByAttributeValue("class", "vacancy_description").text();
+            description = document.getElementsByAttributeValue("class", "b-vacancy-desc-wrapper").text();
         } catch (IOException e) {
             logger.error("Can't get document for url = " + url + ". Exception: " + e.getMessage());
         }
@@ -94,7 +95,7 @@ public class MoikrugStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected Elements parseElements(Document doc) {
-        return doc.getElementsByClass("job");
+    Elements parseElements(Document document) {
+        return document.getElementsByAttributeValueMatching("data-qa", "vacancy-serp__vacancy( |$).*");
     }
 }
