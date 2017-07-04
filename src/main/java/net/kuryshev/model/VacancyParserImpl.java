@@ -3,7 +3,7 @@ package net.kuryshev.model;
 import net.kuryshev.model.dao.VacancyDao;
 import net.kuryshev.model.dao.VacancyDaoJdbc;
 import net.kuryshev.model.entity.Vacancy;
-import net.kuryshev.model.strategy.Provider;
+import net.kuryshev.model.strategy.Strategy;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -17,11 +17,11 @@ public class VacancyParserImpl implements VacancyParser {
 
     //TODO make dynamic
     private VacancyDao dao = new VacancyDaoJdbc();
-    private Provider[] providers;
+    private Strategy[] strategies;
 
-    public VacancyParserImpl(Provider... providers) {
-        if (providers == null || providers.length == 0) throw new IllegalArgumentException();
-        this.providers = providers;
+    public VacancyParserImpl(Strategy... strategies) {
+        if (strategies == null || strategies.length == 0) throw new IllegalArgumentException();
+        this.strategies = strategies;
     }
 
     @Override
@@ -29,12 +29,12 @@ public class VacancyParserImpl implements VacancyParser {
         query = query.replaceAll(" ", "+");
         List<Vacancy> vacancies = new ArrayList<>();
         String strategiesString = "";
-        for (Provider provider : providers)
-            strategiesString += provider.getStrategy().getClass().getSimpleName() + ", ";
+        for (Strategy strategy : strategies)
+            strategiesString += strategy.getClass().getSimpleName() + ", ";
         logger.trace("Starting to parse vacancies from " + strategiesString);
         Date date1 = new Date();
-        for (Provider provider : providers)
-            vacancies.addAll(provider.getVacanciesContaining(query));
+        for (Strategy strategy : strategies)
+            vacancies.addAll(strategy.getVacancies(query));
         Date date2 = new Date();
         logger.trace("All vacancies (" + vacancies.size() + ") parsed in " + (date2.getTime() - date1.getTime()) + "ms");
         date1 = new Date();

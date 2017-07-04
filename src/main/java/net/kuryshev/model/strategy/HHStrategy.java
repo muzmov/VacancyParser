@@ -13,7 +13,7 @@ import java.util.Map;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
-public class HhStrategy extends AbstractStrategy {
+public class HHStrategy extends AbstractStrategy {
     private final static String URL_FORMAT = "http://hh.ru/search/vacancy?text=%s&page=%d";
     private static Logger logger = Logger.getLogger(getClassName());
     private Map<String, Company> companies = new HashMap<>();
