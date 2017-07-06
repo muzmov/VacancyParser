@@ -40,10 +40,10 @@ public class AdminController extends DependencyInjectionServlet {
         if (moikrug) strategies[i] = new MoikrugStrategy();
 
         VacancyParser parser = new VacancyParserImpl(strategies);
-        logger.debug("Searching for \"" + searchString + "\" in " + (moikrug?"moikrug ":"") + (hh?"hh ":""));
+        logger.info("Searching for \"" + searchString + "\" in " + (moikrug?"moikrug ":"") + (hh?"hh ":""));
         List<Vacancy> searchResults = parser.searchContaining(searchString);
         request.setAttribute("vacancies", searchResults);
-        logger.debug(searchResults.size() + " results found");
+        logger.info(searchResults.size() + " results found");
         request.getRequestDispatcher("results.jsp").forward(request, response);
     }
 }

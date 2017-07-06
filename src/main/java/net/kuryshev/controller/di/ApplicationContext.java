@@ -4,18 +4,12 @@ import org.apache.log4j.Logger;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Map;
 import java.util.Properties;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
-/**
- * Created by 1 on 27.06.2017.
- */
 public class ApplicationContext {
-    Logger logger = Logger.getLogger(getClassName());
+    private Logger logger = Logger.getLogger(getClassName());
 
     private Properties props = new Properties();
 
@@ -31,11 +25,11 @@ public class ApplicationContext {
             Class clazz = Class.forName(className);
             result = clazz.newInstance();
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            logger.error("Can not found class for injection", e);
         } catch (InstantiationException e) {
-            logger.error("Wrong injection class in property file.");
+            logger.error("Wrong injection class in property file.", e);
         } catch (IllegalAccessException e) {
-            logger.error("Can not initialize new injection object. Injection class should have public constructor with no parameters");
+            logger.error("Can not initialize new injection object. Injection class should have public constructor with no parameters", e);
         }
         return result;
     }

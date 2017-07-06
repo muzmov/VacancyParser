@@ -16,6 +16,7 @@ import static net.kuryshev.Utils.ClassUtils.getClassName;
 
 public abstract class AbstractStrategy implements Strategy {
     private static Logger logger = Logger.getLogger(getClassName());
+    private static final int MAX_PAGES = 10;
 
     @Override
     public List<Vacancy> getVacancies(String searchString) {
@@ -24,12 +25,12 @@ public abstract class AbstractStrategy implements Strategy {
         Document doc;
 
         //TODO handle all the pages (only 10 now)
-        while (page < 10) {
+        while (page < MAX_PAGES) {
             try {
                 doc = getDocument(searchString, page++);
             } catch (IOException e) {
                 logger.error("Can't get document for search query = " + searchString +
-                        " and page = " + page + ". Exception: " + e.getMessage());
+                        " and page = " + page, e);
                 break;
             }
             Elements elements = parseElements(doc);

@@ -2,7 +2,7 @@ package net.kuryshev.model.dao.sql;
 
 /**
  * Generates SELECT sql according this template:
- * @<code> SELECT * FROM table WHERE columns[0] IS LIKE 'filters[0]' OR columns[1] IS LIKE 'filters[1]' ...</code>
+ * SELECT * FROM table WHERE columns[0] IS LIKE 'filters[0]' OR columns[1] IS LIKE 'filters[1]' ...
  * There will be no WHERE clause if columns or filters are empty
  */
 

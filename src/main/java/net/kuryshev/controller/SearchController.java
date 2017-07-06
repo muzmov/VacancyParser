@@ -34,11 +34,11 @@ public class SearchController extends DependencyInjectionServlet {
             if (inDescription) params = SearchParams.SEARCH_IN_DESCRIPTION;
         }
 
-        logger.trace("Searching for \"" + searchString + "\" in "
+        logger.info("Searching for \"" + searchString + "\" in "
                 + (inTitle?"in title ":"") + (inDescription?"in description":""));
         List<Vacancy> searchResults = dao.selectContaining(searchString, params);
         request.setAttribute("vacancies", searchResults);
-        logger.trace(searchResults.size() + " results found");
+        logger.info(searchResults.size() + " results found");
         request.getRequestDispatcher("results.jsp").forward(request, response);
     }
 }

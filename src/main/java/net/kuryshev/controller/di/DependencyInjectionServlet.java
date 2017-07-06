@@ -10,11 +10,8 @@ import java.lang.reflect.Field;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
-/**
- * Created by 1 on 27.06.2017.
- */
 public class DependencyInjectionServlet extends HttpServlet {
-    Logger logger = Logger.getLogger(getClassName());
+    private Logger logger = Logger.getLogger(getClassName());
 
     private static String PROPERTIES_FILENAME = "webapps/VacancyParser/WEB-INF/classes/injection.properties";
 
@@ -27,8 +24,8 @@ public class DependencyInjectionServlet extends HttpServlet {
             System.out.println(file.getAbsolutePath());
             appCtx.init(PROPERTIES_FILENAME);
         } catch (IOException e) {
-            logger.error("There is no properties file for injection.");
-            throw new ServletException("There is no properties file for injection.");
+            logger.error("There is no properties file for injection.", e);
+            throw new ServletException("There is no properties file for injection.", e);
         }
 
         Class clazz = this.getClass();
@@ -45,7 +42,7 @@ public class DependencyInjectionServlet extends HttpServlet {
                     try {
                         field.set(this, fieldValue);
                     } catch (IllegalAccessException e) {
-                        logger.error("Unexpected error in dependency injection.");
+                        logger.error("Unexpected error in dependency injection.", e);
                     }
                 }
             }

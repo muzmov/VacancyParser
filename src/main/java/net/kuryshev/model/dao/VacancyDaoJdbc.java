@@ -43,7 +43,7 @@ public class VacancyDaoJdbc implements VacancyDao {
     @Override
     public List<Vacancy> selectContaining(String query, SearchParams params) {
         String sql = getSelectSql(params, query);
-        return selectVacancies(sql);
+        return executeVacanciesSelect(sql);
     }
 
     private String getSelectSql(SearchParams params, String query) {
@@ -75,7 +75,7 @@ public class VacancyDaoJdbc implements VacancyDao {
         return sql;
     }
 
-    private List<Vacancy> selectVacancies(String sql) {
+    private List<Vacancy> executeVacanciesSelect(String sql) {
         List<Vacancy> vacancies = new ArrayList<>();
         Map<String, Company> companyMap = new HashMap<>();
 
@@ -107,11 +107,21 @@ public class VacancyDaoJdbc implements VacancyDao {
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         } finally {
-            try { con.close(); } catch(SQLException se) { logger.error(se.getMessage()); }
-            try { stmt.close(); } catch(SQLException se) { logger.error(se.getMessage()); }
-            try { stmtCompany.close(); } catch(SQLException se) { logger.error(se.getMessage()); }
-            try { rs.close(); } catch(SQLException se) { logger.error(se.getMessage()); }
-            try { rsCompany.close(); } catch(SQLException | NullPointerException se) { logger.error(se.getMessage()); }
+            try { con.close(); } catch(SQLException | NullPointerException se) {
+                logger.error("Can not close sql resource.", se);
+            }
+            try { stmt.close(); } catch(SQLException | NullPointerException se) {
+                logger.error("Can not close sql resource.", se);
+            }
+            try { stmtCompany.close(); } catch(SQLException | NullPointerException se) {
+                logger.error("Can not close sql resource.", se);
+            }
+            try { rs.close(); } catch(SQLException | NullPointerException se) {
+                logger.error("Can not close sql resource.", se);
+            }
+            try { rsCompany.close(); } catch(SQLException | NullPointerException se) {
+                logger.error("Can not close sql resource.", se);
+            }
         }
         return vacancies;
     }
@@ -129,31 +139,14 @@ public class VacancyDaoJdbc implements VacancyDao {
         Sql deleteSql = new DeleteSql("Vacancies");
         sql = deleteSql.generate();
         executeSqlUpdate(sql);
+        logger.info("All vacancies deleted");
     }
 
     @Override
     public void add(Vacancy vacancy) {
-        String sql = getInsertVacancySql(vacancy);
-        try {
-            con = DriverManager.getConnection(JDBC_URL, user, password);
-            stmtCompany = con.createStatement();
-            String[] columns = {"name"};
-            String[] filters = {vacancy.getCompany().getName()};
-            Sql selectSql = new SelectSql("Companies", columns, filters);
-            String sqlCompany = selectSql.generate();
-            rsCompany = stmtCompany.executeQuery(sqlCompany);
-            if (!rsCompany.next()) {
-                String sqlUpdateCompany = getInsertCompanySql(vacancy);
-                stmtCompany.executeUpdate(sqlUpdateCompany);
-            }
-        } catch (SQLException sqlEx) {
-            logger.error("SQL exception occured in addAll: " + sqlEx.getMessage());
-        } finally {
-            try { con.close(); } catch(SQLException se) { /*can't do anything */ }
-            try { stmtCompany.close(); } catch(SQLException se) { /*can't do anything */ }
-            try { rsCompany.close(); } catch(SQLException se) { /*can't do anything */ }
-        }
-        executeSqlUpdate(sql);
+        List<Vacancy> vacancyList = new ArrayList<>();
+        vacancyList.add(vacancy);
+        addAll(vacancyList);
     }
 
     @Override
@@ -185,14 +178,18 @@ public class VacancyDaoJdbc implements VacancyDao {
                     stmt.executeUpdate(sql);
                     ++addedVacanciesCounter;
                 } catch (Exception e) {
-                    logger.error("Exception while trying to add vacancy to database: " + e.getMessage() + ". On vacancy: " + vacancy);
+                    logger.warn("This vacancy was not added to database:" + vacancy, e);
                 }
             }
         } catch (SQLException sqlEx) {
-            logger.error("Major SQL exception occured in addAll: " + sqlEx.getMessage());
+            logger.error("Major SQL exception occured in addAll.", sqlEx);
         } finally {
-            try { con.close(); } catch(SQLException se) { logger.error("Can not close connection. Error: " + se.getMessage());}
-            try { stmt.close(); } catch(SQLException se) { logger.error("Can not close statement. Error: " + se.getMessage()); }
+            try { con.close(); } catch(SQLException | NullPointerException se) {
+                logger.error("Can not close sql resource.", se);
+            }
+            try { stmt.close(); } catch(SQLException | NullPointerException se) {
+                logger.error("Can not close sql resource.", se);
+            }
         }
         logger.trace(addedVacanciesCounter + " vacancies added");
     }
