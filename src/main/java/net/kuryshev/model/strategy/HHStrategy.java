@@ -56,7 +56,9 @@ public class HHStrategy extends AbstractStrategy {
 
     @Override
     protected String parseUrl(Element element) {
-        return element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-title").attr("href");
+        String url = element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-title").attr("href");
+        url = url.substring(0, url.indexOf("?"));
+        return url;
     }
 
     @Override
