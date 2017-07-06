@@ -2,6 +2,7 @@ package net.kuryshev.model.dao;
 
 
 import net.kuryshev.model.SearchParams;
+import net.kuryshev.model.dao.sql.*;
 import net.kuryshev.model.entity.Company;
 import net.kuryshev.model.entity.Vacancy;
 import org.apache.log4j.Logger;
@@ -22,17 +23,6 @@ public class VacancyDaoJdbc implements VacancyDao {
     private static final String user = "root";
     private static final String password = "password";
 
-    private static final String SELECT_ALL_SQL  = "SELECT * FROM Vacancies";
-    //TODO: set safe update = 0 before deleting
-    private static final String DELETE_ALL_SQL  = "DELETE FROM Vacancies";
-    private static final String SELECT_CONTAINING_TITLE_SQL  = "SELECT * FROM Vacancies WHERE title LIKE '%?%'";
-    private static final String SELECT_CONTAINING_DESCRIPTION_SQL  = "SELECT * FROM Vacancies WHERE description LIKE '%?%'";
-    private static final String SELECT_CONTAINING_TITLE_OR_DESCRIPTION_SQL  = "SELECT * FROM Vacancies WHERE title LIKE '%?%' OR description LIKE '%?%'";
-    private static final String SELECT_COMPANY_BY_NAME_SQL = "SELECT * FROM Companies WHERE name = '?'";
-    //TODO: refactor this
-    private static final String INSERT_VACANCY_SQL = "INSERT INTO Vacancies (title, description, url, site_name, city, company, salary, rating) VALUES ('?1', '?2', '?3', '?4', '?5', '?6', '?7', ?8)";
-    private static final String INSERT_COMPANY_SQL = "INSERT INTO Companies (name, url, rating, reviews_url) VALUES ('?1', '?2', ?3, '?4')";
-
     private static Connection con;
     private static Statement stmt, stmtCompany;
     private static ResultSet rs, rsCompany;
@@ -52,18 +42,37 @@ public class VacancyDaoJdbc implements VacancyDao {
 
     @Override
     public List<Vacancy> selectContaining(String query, SearchParams params) {
-        String sql = null;
-
-        if (params == SearchParams.SELECT_ALL)
-            sql = SELECT_ALL_SQL;
-        if (params == SearchParams.SEARCH_IN_TITLE)
-            sql = SELECT_CONTAINING_TITLE_SQL.replaceAll("\\?", query);
-        if (params == SearchParams.SEARCH_IN_DESCRIPTION)
-            sql = SELECT_CONTAINING_DESCRIPTION_SQL.replaceAll("\\?", query);
-        if (params == SearchParams.SEARCH_IN_TITLE_AND_DESCRIPTION)
-            sql = SELECT_CONTAINING_TITLE_OR_DESCRIPTION_SQL.replaceAll("\\?", query);
-
+        String sql = getSelectSql(params, query);
         return selectVacancies(sql);
+    }
+
+    private String getSelectSql(SearchParams params, String query) {
+        String sql = "";
+        if (params == SearchParams.SELECT_ALL) {
+            String[] columns = {};
+            String[] filters = {};
+            Sql selectSql = new SelectSql("Vacancies", columns, filters);
+            sql = selectSql.generate();
+        }
+        if (params == SearchParams.SEARCH_IN_TITLE) {
+            String[] columns = {"title"};
+            String[] filters = {"%" + query + "%"};
+            Sql selectSql = new SelectSql("Vacancies", columns, filters);
+            sql = selectSql.generate();
+        }
+        if (params == SearchParams.SEARCH_IN_DESCRIPTION){
+            String[] columns = {"description"};
+            String[] filters = {"%" + query + "%"};
+            Sql selectSql = new SelectSql("Vacancies", columns, filters);
+            sql = selectSql.generate();
+        }
+        if (params == SearchParams.SEARCH_IN_TITLE_AND_DESCRIPTION){
+            String[] columns = {"title", "description"};
+            String[] filters = {"%" + query + "%", "%" + query + "%"};
+            Sql selectSql = new SelectSql("Vacancies", columns, filters);
+            sql = selectSql.generate();
+        }
+        return sql;
     }
 
     private List<Vacancy> selectVacancies(String sql) {
@@ -79,18 +88,16 @@ public class VacancyDaoJdbc implements VacancyDao {
             while (rs.next()) {
                 Vacancy vacancy = getVacancyFromResultSet();
 
-                //getting company info
                 String companyName = rs.getString("company");
                 Company company;
                 if ((company = companyMap.get(companyName)) == null) {
-                    String sqlCompany = SELECT_COMPANY_BY_NAME_SQL.replaceAll("\\?", companyName);
+                    String[] columns = {"name"};
+                    String[] filters = {companyName};
+                    Sql selectSql = new SelectSql("Companies", columns, filters);
+                    String sqlCompany = selectSql.generate();
                     rsCompany = stmtCompany.executeQuery(sqlCompany);
                     if (rsCompany.next()) {
-                        company = new Company();
-                        company.setName(rsCompany.getString("name"));
-                        company.setUrl(rsCompany.getString("url"));
-                        company.setRewiewsUrl(rsCompany.getString("reviews_url"));
-                        company.setRating(rsCompany.getDouble("rating"));
+                        company = getCompanyFromResultSet();
                         companyMap.put(companyName, company);
                     }
                 }
@@ -116,18 +123,25 @@ public class VacancyDaoJdbc implements VacancyDao {
 
     @Override
     public void deleteAll() {
-        executeSqlUpdate(DELETE_ALL_SQL);
+        Sql updatesSql = new SetSafeUpdatesSql();
+        String sql = updatesSql.generate();
+        executeSqlUpdate(sql);
+        Sql deleteSql = new DeleteSql("Vacancies");
+        sql = deleteSql.generate();
+        executeSqlUpdate(sql);
     }
 
     @Override
     public void add(Vacancy vacancy) {
         String sql = getInsertVacancySql(vacancy);
-
         try {
             con = DriverManager.getConnection(JDBC_URL, user, password);
             stmtCompany = con.createStatement();
-            String sqlSelectCompany = SELECT_COMPANY_BY_NAME_SQL.replaceAll("\\?", vacancy.getCompany().getName());
-            rsCompany = stmtCompany.executeQuery(sqlSelectCompany);
+            String[] columns = {"name"};
+            String[] filters = {vacancy.getCompany().getName()};
+            Sql selectSql = new SelectSql("Companies", columns, filters);
+            String sqlCompany = selectSql.generate();
+            rsCompany = stmtCompany.executeQuery(sqlCompany);
             if (!rsCompany.next()) {
                 String sqlUpdateCompany = getInsertCompanySql(vacancy);
                 stmtCompany.executeUpdate(sqlUpdateCompany);
@@ -139,7 +153,6 @@ public class VacancyDaoJdbc implements VacancyDao {
             try { stmtCompany.close(); } catch(SQLException se) { /*can't do anything */ }
             try { rsCompany.close(); } catch(SQLException se) { /*can't do anything */ }
         }
-
         executeSqlUpdate(sql);
     }
 
@@ -156,10 +169,14 @@ public class VacancyDaoJdbc implements VacancyDao {
             for (Vacancy vacancy : vacancies) {
                 try {
                     if (!companyNameSet.contains(vacancy.getCompany().getName())) {
-                        rsCompany = stmt.executeQuery(SELECT_COMPANY_BY_NAME_SQL.replaceAll("\\?", vacancy.getCompany().getName()));
+                        String[] columns = {"name"};
+                        String[] filters = {vacancy.getCompany().getName()};
+                        Sql selectSql = new SelectSql("Companies", columns, filters);
+                        String sqlCompany = selectSql.generate();
+                        rsCompany = stmt.executeQuery(sqlCompany);
                         if (!rsCompany.next()) {
-                            String sqlCompany = getInsertCompanySql(vacancy);
-                            stmt.executeUpdate(sqlCompany);
+                            String sqlInsertCompany = getInsertCompanySql(vacancy);
+                            stmt.executeUpdate(sqlInsertCompany);
                         }
                         rsCompany.close();
                         companyNameSet.add(vacancy.getCompany().getName());
@@ -181,23 +198,17 @@ public class VacancyDaoJdbc implements VacancyDao {
     }
 
     private String getInsertCompanySql(Vacancy vacancy) {
-        String sqlCompany = INSERT_COMPANY_SQL.replaceAll("\\?1", vacancy.getCompany().getName());
-        sqlCompany = sqlCompany.replaceAll("\\?2", vacancy.getCompany().getUrl());
-        sqlCompany = sqlCompany.replaceAll("\\?3", vacancy.getCompany().getRating() + "");
-        sqlCompany = sqlCompany.replaceAll("\\?4", vacancy.getCompany().getRewiewsUrl());
-        return sqlCompany;
+        Company company = vacancy.getCompany();
+        String[] values = {company.getName(), company.getUrl(), company.getRating() + "", company.getRewiewsUrl()};
+        Sql insertSql = new InsertSql("Companies", values);
+        return insertSql.generate();
     }
 
     private String getInsertVacancySql(Vacancy vacancy) {
-        String sql = INSERT_VACANCY_SQL.replaceAll("\\?1", vacancy.getTitle());
-        sql = sql.replaceAll("\\?2", vacancy.getDescription());
-        sql = sql.replaceAll("\\?3", vacancy.getUrl());
-        sql = sql.replaceAll("\\?4", vacancy.getSiteName());
-        sql = sql.replaceAll("\\?5", vacancy.getCity());
-        sql = sql.replaceAll("\\?6", vacancy.getCompany().getName());
-        sql = sql.replaceAll("\\?7", vacancy.getSalary());
-        sql = sql.replaceAll("\\?8", vacancy.getRating() + "");
-        return sql;
+        String[] values = {vacancy.getTitle(), vacancy.getDescription(), vacancy.getUrl(), vacancy.getSiteName(),
+                vacancy.getCity(), vacancy.getCompany().getName(), vacancy.getSalary(), vacancy.getRating() + ""};
+        Sql insertSql = new InsertSql("Vacancies", values);
+        return insertSql.generate();
     }
 
     private Vacancy getVacancyFromResultSet() throws SQLException {
@@ -210,6 +221,16 @@ public class VacancyDaoJdbc implements VacancyDao {
         vacancy.setRating(rs.getDouble("rating"));
         vacancy.setDescription(rs.getString("description"));
         return vacancy;
+    }
+
+    private Company getCompanyFromResultSet() throws SQLException {
+        Company company;
+        company = new Company();
+        company.setName(rsCompany.getString("name"));
+        company.setUrl(rsCompany.getString("url"));
+        company.setRewiewsUrl(rsCompany.getString("reviews_url"));
+        company.setRating(rsCompany.getDouble("rating"));
+        return company;
     }
 
     private void executeSqlUpdate(String sql) {
