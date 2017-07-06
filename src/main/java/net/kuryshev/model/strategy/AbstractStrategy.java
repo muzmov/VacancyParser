@@ -18,16 +18,16 @@ public abstract class AbstractStrategy implements Strategy {
     private static Logger logger = Logger.getLogger(getClassName());
     private static final int MAX_PAGES = 10;
 
+
     @Override
-    public List<Vacancy> getVacancies(String searchString) {
+    public List<Vacancy> getVacancies(String searchString, int initialPage, int jump) {
         List<Vacancy> Vacancies = new ArrayList<>();
-        int page = 0;
+        int page = initialPage;
         Document doc;
 
-        //TODO handle all the pages (only 10 now)
         while (page < MAX_PAGES) {
             try {
-                doc = getDocument(searchString, page++);
+                doc = getDocument(searchString, page);
             } catch (IOException e) {
                 logger.error("Can't get document for search query = " + searchString +
                         " and page = " + page, e);
@@ -52,6 +52,7 @@ public abstract class AbstractStrategy implements Strategy {
                     Vacancies.add(vacancy);
                 }
             }
+            page += jump;
         }
         return Vacancies;
     }

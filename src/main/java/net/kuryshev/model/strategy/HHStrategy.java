@@ -91,7 +91,7 @@ public class HHStrategy extends AbstractStrategy {
             Document document = getDocument(url);
             description = document.getElementsByAttributeValue("class", "b-vacancy-desc-wrapper").text();
         } catch (IOException e) {
-            logger.error("Can't get document for url = " + url + ". Exception: " + e.getMessage());
+            logger.error("Can't get document for url = " + url, e);
         }
         return description;
     }

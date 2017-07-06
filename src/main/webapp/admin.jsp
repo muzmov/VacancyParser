@@ -6,6 +6,7 @@
 </head>
 <form action="admin_parse.do" method="post" id="nameform">
     Что ищем: <input type="text" name="searchString"><br>
+    Число потоков (1 - 100): <input type="text" name="numThreads"><br>
     <label><input type="checkbox" name="hh" value="value">hh.ru</label><br>
     <label><input type="checkbox" name="moikrug" value="value">moikrug.ru</label><br>
 </form>
