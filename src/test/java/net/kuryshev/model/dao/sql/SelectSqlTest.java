@@ -14,18 +14,45 @@ public class SelectSqlTest {
     }
 
     @Test
-    public void generate_correctTwoFilters_Test() {
+    public void generate_simpleTwoFilters_Test() {
         String[] columns = {"column_1", "column_2"};
         String[] filters = {"filter_1", "filter_2"};
         Sql selectSql = new SelectSql("Vacancies", columns, filters);
         Assert.assertEquals("SELECT * FROM Vacancies WHERE column_1 LIKE 'filter_1' OR column_2 LIKE 'filter_2'", selectSql. generate());
     }
+
     @Test
-    public void generate_correctOneFilter_Test() {
+    public void generate_simpleOneFilter_Test() {
         String[] columns = {"column_1"};
         String[] filters = {"filter_1"};
         Sql selectSql = new SelectSql("Vacancies", columns, filters);
         Assert.assertEquals("SELECT * FROM Vacancies WHERE column_1 LIKE 'filter_1'", selectSql. generate());
+    }
+
+    @Test
+    public void generate_complexMultipleWordsFilter_Test() {
+        String[] columns = {"column_1"};
+        String[] filters = {"%filter_1 filter_2%"};
+        Sql selectSql = new SelectSql("Vacancies", columns, filters);
+        Assert.assertEquals("SELECT * FROM Vacancies WHERE column_1 LIKE '%filter_1%' AND column_1 LIKE '%filter_2%'", selectSql. generate());
+    }
+
+    @Test
+    public void generate_complexMultipleWordsTwoFilters_Test() {
+        String[] columns = {"column_1", "column_2"};
+        String[] filters = {"%filter_1 filter_2%", "%filter_3 filter_4%"};
+        Sql selectSql = new SelectSql("Vacancies", columns, filters);
+        Assert.assertEquals("SELECT * FROM Vacancies WHERE column_1 LIKE '%filter_1%' AND column_1 LIKE '%filter_2%'" +
+                " OR column_2 LIKE '%filter_3%' AND column_2 LIKE '%filter_4%'", selectSql. generate());
+    }
+
+
+    @Test
+    public void generate_complexSingleWordComplexFilter_Test() {
+        String[] columns = {"column_1"};
+        String[] filters = {"%filter_1%"};
+        Sql selectSql = new SelectSql("Vacancies", columns, filters);
+        Assert.assertEquals("SELECT * FROM Vacancies WHERE column_1 LIKE '%filter_1%'", selectSql. generate());
     }
 
     @Test(expected = IllegalArgumentException.class)

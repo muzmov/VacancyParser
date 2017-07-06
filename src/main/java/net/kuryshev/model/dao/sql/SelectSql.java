@@ -1,10 +1,5 @@
 package net.kuryshev.model.dao.sql;
 
-/**
- * Generates SELECT sql according this template:
- * SELECT * FROM table WHERE columns[0] IS LIKE 'filters[0]' OR columns[1] IS LIKE 'filters[1]' ...
- * There will be no WHERE clause if columns or filters are empty
- */
 
 public class SelectSql implements Sql {
     private final String SQL = "SELECT * FROM %s";
@@ -24,11 +19,24 @@ public class SelectSql implements Sql {
         if (columns.length != 0 ) {
             result += " WHERE";
             for (int i = 0; i < columns.length - 1; i++) {
-                result += " " + columns[i] + " LIKE '" + filters[i] + "' OR";
+                result +=  generateFilter(columns[i], filters[i]) + " OR";
             }
-            result += " " + columns[columns.length - 1] + " LIKE '" + filters[filters.length - 1] + "'";
+            result += generateFilter(columns[columns.length - 1], filters[filters.length - 1]);
         }
         return result;
     }
 
+    private String generateFilter(String column, String filter) {
+        if (!filter.matches("%.*%")) return " " + column + " LIKE '" + filter + "'";
+        else {
+            filter = filter.substring(1, filter.length() - 1);
+            String[] filterWords = filter.split(" ");
+            String result = "";
+            for (int i = 0; i < filterWords.length - 1; i++) {
+                result += " " + column + " LIKE '%" + filterWords[i] + "%' AND";
+            }
+            result += " " + column + " LIKE '%" + filterWords[filterWords.length - 1] + "%'";
+            return result;
+        }
+    }
 }
