@@ -139,6 +139,9 @@ public class VacancyDaoJdbc implements VacancyDao {
         Sql deleteSql = new DeleteSql("Vacancies");
         sql = deleteSql.generate();
         executeSqlUpdate(sql);
+        deleteSql = new DeleteSql("Companies");
+        sql = deleteSql.generate();
+        executeSqlUpdate(sql);
         logger.info("All vacancies deleted");
     }
 

@@ -1,8 +1,10 @@
 package net.kuryshev.controller;
 
 import net.kuryshev.controller.di.DependencyInjectionServlet;
+import net.kuryshev.controller.di.Inject;
 import net.kuryshev.model.VacancyParser;
 import net.kuryshev.model.VacancyParserImpl;
+import net.kuryshev.model.dao.VacancyDao;
 import net.kuryshev.model.entity.Vacancy;
 import net.kuryshev.model.strategy.HHStrategy;
 import net.kuryshev.model.strategy.MoikrugStrategy;
@@ -20,7 +22,17 @@ import static net.kuryshev.Utils.ClassUtils.getClassName;
 public class AdminController extends DependencyInjectionServlet {
     private Logger logger = Logger.getLogger(getClassName());
 
+    @Inject("dao")
+    private VacancyDao dao;
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (request.getParameter("delete") != null) {
+            logger.info("Delete all request accepted");
+            dao.deleteAll();
+            request.getRequestDispatcher("results.jsp").forward(request, response);
+            return;
+        }
+
         String searchString = request.getParameter("searchString");
         boolean hh = request.getParameter("hh") != null;
         boolean moikrug = request.getParameter("moikrug") != null;
