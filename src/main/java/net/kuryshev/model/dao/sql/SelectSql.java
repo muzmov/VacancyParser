@@ -4,13 +4,20 @@ package net.kuryshev.model.dao.sql;
 public class SelectSql implements Sql {
     private final String SQL = "SELECT * FROM %s";
     private String table;
-    private String[] columns, filters;
+    private String connector = "";
+    private String[] columns = {};
+    private String[] filters = {};
 
-    public SelectSql(String table, String[] columns, String[] filters) {
+    public SelectSql(String table) {
+        this.table = table;
+    }
+
+    public void setFilters(String[] columns, String[] filters, String connector) {
         if (columns == null || filters == null || filters.length != columns.length) throw new IllegalArgumentException();
+        if (!(connector.equals("OR") || connector.equals("AND"))) throw new IllegalArgumentException();
         this.columns = columns;
         this.filters = filters;
-        this.table = table;
+        this.connector = connector;
     }
 
     @Override
@@ -19,7 +26,7 @@ public class SelectSql implements Sql {
         if (columns.length != 0 ) {
             result += " WHERE";
             for (int i = 0; i < columns.length - 1; i++) {
-                result +=  generateFilter(columns[i], filters[i]) + " OR";
+                result +=  generateFilter(columns[i], filters[i]) + " " + connector;
             }
             result += generateFilter(columns[columns.length - 1], filters[filters.length - 1]);
         }

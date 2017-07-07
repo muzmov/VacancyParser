@@ -25,6 +25,13 @@ public class InsertSqlTest {
     }
 
     @Test
+    public void generate_UsersSql_Test() {
+        String[] values = {"1", "2", "3"};
+        Sql insertSql = new InsertSql("Users", values);
+        Assert.assertEquals("INSERT INTO Users (login, password, role) VALUES ('1', '2', '3')", insertSql.generate() );
+    }
+
+    @Test
     public void generate_VacanciesSql_Test() {
         String[] values = {"1", "2", "3", "4", "5", "6", "7", "8"};
         Sql insertSql = new InsertSql("Vacancies", values);

@@ -27,6 +27,18 @@ CREATE TABLE Companies (
   reviews_url TEXT
 );
 
+DROP TABLE  IF EXISTS Users;
+
+CREATE TABLE Users (
+  login       VARCHAR(20) NOT NULL PRIMARY KEY,
+  password    VARCHAR(255) NOT NULL,
+  role        VARCHAR(255) NOT NULL
+);
+
+INSERT INTO Users VALUES
+  ('admin', 'password', 'ADMIN'),
+  ('user', 'password', 'USER');
+
 # INSERT INTO Companies (name, url, rating, reviews_url)
 # VALUES
 #   ('GlowByte', 'http://glowbyte.com', 4.4, 'http://linktoreviews.ru'),

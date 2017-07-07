@@ -20,18 +20,18 @@ public class VacancyDaoJdbc implements VacancyDao {
     //TODO: move settings to property file
     private static final String DRIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
     private static String JDBC_URL = "jdbc:mysql://localhost:3306/vacancyparser?useSSL=false";
-    private static final String user = "root";
-    private static final String password = "password";
+    private static final String USER = "root";
+    private static final String PASSWORD = "password";
 
-    private static Connection con;
-    private static Statement stmt, stmtCompany;
-    private static ResultSet rs, rsCompany;
+    private Connection con;
+    private Statement stmt, stmtCompany;
+    private ResultSet rs, rsCompany;
 
     static {
         try {
             Class.forName(DRIVER_CLASS_NAME);
         } catch (ClassNotFoundException e) {
-            logger.error("Can't find MYSQL driver");
+            logger.error("Can't find MYSQL driver", e);
         }
     }
 
@@ -49,27 +49,28 @@ public class VacancyDaoJdbc implements VacancyDao {
     private String getSelectSql(SearchParams params, String query) {
         String sql = "";
         if (params == SearchParams.SELECT_ALL) {
-            String[] columns = {};
-            String[] filters = {};
-            Sql selectSql = new SelectSql("Vacancies", columns, filters);
+            Sql selectSql = new SelectSql("Vacancies");
             sql = selectSql.generate();
         }
         if (params == SearchParams.SEARCH_IN_TITLE) {
             String[] columns = {"title"};
             String[] filters = {"%" + query + "%"};
-            Sql selectSql = new SelectSql("Vacancies", columns, filters);
+            SelectSql selectSql = new SelectSql("Vacancies");
+            selectSql.setFilters(columns, filters, "OR");
             sql = selectSql.generate();
         }
         if (params == SearchParams.SEARCH_IN_DESCRIPTION){
             String[] columns = {"description"};
             String[] filters = {"%" + query + "%"};
-            Sql selectSql = new SelectSql("Vacancies", columns, filters);
+            SelectSql selectSql = new SelectSql("Vacancies");
+            selectSql.setFilters(columns, filters, "OR");
             sql = selectSql.generate();
         }
         if (params == SearchParams.SEARCH_IN_TITLE_AND_DESCRIPTION){
             String[] columns = {"title", "description"};
             String[] filters = {"%" + query + "%", "%" + query + "%"};
-            Sql selectSql = new SelectSql("Vacancies", columns, filters);
+            SelectSql selectSql = new SelectSql("Vacancies");
+            selectSql.setFilters(columns, filters, "OR");
             sql = selectSql.generate();
         }
         return sql;
@@ -80,7 +81,7 @@ public class VacancyDaoJdbc implements VacancyDao {
         Map<String, Company> companyMap = new HashMap<>();
 
         try {
-            con = DriverManager.getConnection(JDBC_URL, user, password);
+            con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
             stmt = con.createStatement();
             rs = stmt.executeQuery(sql);
             stmtCompany = con.createStatement();
@@ -93,7 +94,8 @@ public class VacancyDaoJdbc implements VacancyDao {
                 if ((company = companyMap.get(companyName)) == null) {
                     String[] columns = {"name"};
                     String[] filters = {companyName};
-                    Sql selectSql = new SelectSql("Companies", columns, filters);
+                    SelectSql selectSql = new SelectSql("Companies");
+                    selectSql.setFilters(columns, filters, "OR");
                     String sqlCompany = selectSql.generate();
                     rsCompany = stmtCompany.executeQuery(sqlCompany);
                     if (rsCompany.next()) {
@@ -107,21 +109,11 @@ public class VacancyDaoJdbc implements VacancyDao {
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         } finally {
-            try { con.close(); } catch(SQLException | NullPointerException se) {
-                logger.error("Can not close sql resource.", se);
-            }
-            try { stmt.close(); } catch(SQLException | NullPointerException se) {
-                logger.error("Can not close sql resource.", se);
-            }
-            try { stmtCompany.close(); } catch(SQLException | NullPointerException se) {
-                logger.error("Can not close sql resource.", se);
-            }
-            try { rs.close(); } catch(SQLException | NullPointerException se) {
-                logger.error("Can not close sql resource.", se);
-            }
-            try { rsCompany.close(); } catch(SQLException | NullPointerException se) {
-                logger.error("Can not close sql resource.", se);
-            }
+            try { con.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
+            try { stmt.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
+            try { stmtCompany.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
+            try { rs.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
+            try { rsCompany.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
         }
         return vacancies;
     }
@@ -136,7 +128,7 @@ public class VacancyDaoJdbc implements VacancyDao {
         Sql updatesSql = new SetSafeUpdatesSql();
         String sql = updatesSql.generate();
         executeSqlUpdate(sql);
-        Sql deleteSql = new DeleteSql("Vacancies");
+        DeleteSql deleteSql = new DeleteSql("Vacancies");
         sql = deleteSql.generate();
         executeSqlUpdate(sql);
         deleteSql = new DeleteSql("Companies");
@@ -159,7 +151,7 @@ public class VacancyDaoJdbc implements VacancyDao {
 
         int addedVacanciesCounter = 0;
         try {
-            con = DriverManager.getConnection(JDBC_URL, user, password);
+            con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
             stmt = con.createStatement();
 
             for (Vacancy vacancy : vacancies) {
@@ -167,7 +159,8 @@ public class VacancyDaoJdbc implements VacancyDao {
                     if (!companyNameSet.contains(vacancy.getCompany().getName())) {
                         String[] columns = {"name"};
                         String[] filters = {vacancy.getCompany().getName()};
-                        Sql selectSql = new SelectSql("Companies", columns, filters);
+                        SelectSql selectSql = new SelectSql("Companies");
+                        selectSql.setFilters(columns, filters, "OR");
                         String sqlCompany = selectSql.generate();
                         rsCompany = stmt.executeQuery(sqlCompany);
                         if (!rsCompany.next()) {
@@ -187,12 +180,8 @@ public class VacancyDaoJdbc implements VacancyDao {
         } catch (SQLException sqlEx) {
             logger.error("Major SQL exception occured in addAll.", sqlEx);
         } finally {
-            try { con.close(); } catch(SQLException | NullPointerException se) {
-                logger.error("Can not close sql resource.", se);
-            }
-            try { stmt.close(); } catch(SQLException | NullPointerException se) {
-                logger.error("Can not close sql resource.", se);
-            }
+            try { con.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
+            try { stmt.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
         }
         logger.trace(addedVacanciesCounter + " vacancies added");
     }
@@ -235,14 +224,14 @@ public class VacancyDaoJdbc implements VacancyDao {
 
     private void executeSqlUpdate(String sql) {
         try {
-            con = DriverManager.getConnection(JDBC_URL, user, password);
+            con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
             stmt = con.createStatement();
             stmt.executeUpdate(sql);
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         } finally {
-            try { con.close(); } catch(SQLException se) { /*can't do anything */ }
-            try { stmt.close(); } catch(SQLException se) { /*can't do anything */ }
+            try { con.close(); } catch(SQLException | NullPointerException se) { /*NOP*/ }
+            try { stmt.close(); } catch(SQLException | NullPointerException se) { /*NOP*/ }
         }
     }
 }
