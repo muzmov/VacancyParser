@@ -7,6 +7,8 @@ import net.kuryshev.model.entity.Company;
 import net.kuryshev.model.entity.Vacancy;
 import org.apache.log4j.Logger;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
@@ -17,23 +19,43 @@ public class VacancyDaoJdbc implements VacancyDao {
 
     private static Logger logger = Logger.getLogger(getClassName());
 
-    //TODO: move settings to property file
-    private static final String DRIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
-    private static String JDBC_URL = "jdbc:mysql://localhost:3306/vacancyparser?useSSL=false";
-    private static final String USER = "root";
-    private static final String PASSWORD = "password";
+    private String driverClassName = "com.mysql.jdbc.Driver";
+    private String jdbcUrl = "jdbc:mysql://localhost:3306/vacancyparser?useSSL=false";
+    private String user = "root";
+    private String password = "password";
 
-    private static final String INSERT_VACANCY_SQL =  "INSERT INTO Vacancies (title, description, url, site_name, city, " +
-            "company, salary, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String INSERT_COMPANY_SQL = "INSERT INTO Companies (name, url, rating, reviews_url) " +
-            "VALUES (?, ?, ?, ?)";
-    private static final String SELECT_COMPANY_SQL = "SELECT * FROM Companies WHERE name = ?";
+    private CompanyDao companyDao;
 
-    private ResultSet rs, rsCompany;
+    private Map<String, Company> companyMap = new HashMap<>();
 
-    static {
+    public VacancyDaoJdbc() {
+        companyDao = new CompanyDaoJdbc();
         try {
-            Class.forName(DRIVER_CLASS_NAME);
+            Class.forName(driverClassName);
+        } catch (ClassNotFoundException e) {
+            logger.error("Can't find MYSQL driver", e);
+        }
+    }
+
+    public VacancyDaoJdbc(String propertiesPath) throws IllegalArgumentException {
+        Properties props = new Properties();
+        try {
+            props.load(new FileReader(propertiesPath));
+        } catch (IOException e) {
+            logger.error("Can't open properties file for dao." + e.getMessage());
+            throw new IllegalArgumentException();
+        }
+        driverClassName = props.getProperty("DRIVER_CLASS_NAME");
+        jdbcUrl = props.getProperty("JDBC_URL");
+        user = props.getProperty("USER");
+        password = props.getProperty("PASSWORD");
+        if (driverClassName == null || jdbcUrl == null || user == null || password == null) {
+            logger.error("Not enough info in property file for dao.");
+            throw new IllegalArgumentException();
+        }
+        companyDao = new CompanyDaoJdbc(propertiesPath);
+        try {
+            Class.forName(driverClassName);
         } catch (ClassNotFoundException e) {
             logger.error("Can't find MYSQL driver", e);
         }
@@ -82,38 +104,42 @@ public class VacancyDaoJdbc implements VacancyDao {
 
     private List<Vacancy> executeVacanciesSelect(String sql) {
         List<Vacancy> vacancies = new ArrayList<>();
-        Map<String, Company> companyMap = new HashMap<>();
 
-        try (Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-            Statement stmt = con.createStatement();
-            Statement stmtCompany = con.createStatement())
+        try (Connection con = DriverManager.getConnection(jdbcUrl, user, password);
+             Statement stmt = con.createStatement();
+             Statement stmtCompany = con.createStatement())
         {
             ResultSet rs = stmt.executeQuery(sql);
-
             while (rs.next()) {
                 Vacancy vacancy = getVacancyFromResultSet(rs);
-
-                String companyName = rs.getString("company");
-                Company company;
-                if ((company = companyMap.get(companyName)) == null) {
-                    String[] columns = {"name"};
-                    String[] filters = {companyName};
-                    SelectSql selectSql = new SelectSql("Companies");
-                    selectSql.setFilters(columns, filters, "OR");
-                    String sqlCompany = selectSql.generate();
-                    ResultSet rsCompany = stmtCompany.executeQuery(sqlCompany);
-                    if (rsCompany.next()) {
-                        company = getCompanyFromResultSet(rsCompany);
-                        companyMap.put(companyName, company);
-                    }
-                }
-                vacancy.setCompany(company);
                 vacancies.add(vacancy);
             }
         } catch (SQLException sqlEx) {
             logger.error("Error during select.", sqlEx);
         }
         return vacancies;
+    }
+
+    private Vacancy getVacancyFromResultSet(ResultSet rs) throws SQLException {
+        Vacancy vacancy = new Vacancy();
+        vacancy.setCity(rs.getString("city"));
+        vacancy.setSalary(rs.getString("salary"));
+        vacancy.setSiteName(rs.getString("site_name"));
+        vacancy.setTitle(rs.getString("title"));
+        vacancy.setUrl(rs.getString("url"));
+        vacancy.setRating(rs.getDouble("rating"));
+        vacancy.setDescription(rs.getString("description"));
+
+        String companyName = rs.getString("company");
+        Company company;
+        if ((company = companyMap.get(companyName)) == null) {
+            company = companyDao.getCompanyByName(companyName);
+            if (company == null) company = new Company();
+            companyMap.put(companyName, company);
+        }
+        vacancy.setCompany(company);
+
+        return vacancy;
     }
 
     @Override
@@ -130,6 +156,17 @@ public class VacancyDaoJdbc implements VacancyDao {
         logger.info("All vacancies deleted");
     }
 
+    private void executeSqlUpdate(String sql) {
+        try (
+                Connection con = DriverManager.getConnection(jdbcUrl, user, password);
+                Statement stmt = con.createStatement();)
+        {
+            stmt.executeUpdate(sql);
+        } catch (SQLException sqlEx) {
+            logger.error("Exception during sql update.", sqlEx);
+        }
+    }
+
     @Override
     public void add(Vacancy vacancy) {
         List<Vacancy> vacancyList = new ArrayList<>();
@@ -143,25 +180,16 @@ public class VacancyDaoJdbc implements VacancyDao {
         logger.debug("Adding a bunch (" + vacancies.size() + ") of vacancies to DB");
 
         int addedVacanciesCounter = 0;
-        try (
-            Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-            Statement stmt = con.createStatement();)
+        try (Connection con = DriverManager.getConnection(jdbcUrl, user, password);
+             Statement stmt = con.createStatement();)
         {
             con.setAutoCommit(false);
             for (Vacancy vacancy : vacancies) {
                 try {
-                    if (!companyNameSet.contains(vacancy.getCompany().getName())) {
-                        String[] columns = {"name"};
-                        String[] filters = {vacancy.getCompany().getName()};
-                        SelectSql selectSql = new SelectSql("Companies");
-                        selectSql.setFilters(columns, filters, "OR");
-                        String sqlCompany = selectSql.generate();
-                        rsCompany = stmt.executeQuery(sqlCompany);
-                        if (!rsCompany.next()) {
-                            String sqlInsertCompany = getInsertCompanySql(vacancy);
-                            stmt.executeUpdate(sqlInsertCompany);
-                        }
-                        rsCompany.close();
+                    String companyName = vacancy.getCompany().getName();
+                    if (!companyNameSet.contains(companyName)) {
+                        Company company = companyDao.getCompanyByName(companyName);
+                        if (company == null) companyDao.add(vacancy.getCompany());
                         companyNameSet.add(vacancy.getCompany().getName());
                     }
                     String sql = getInsertVacancySql(vacancy);
@@ -178,50 +206,10 @@ public class VacancyDaoJdbc implements VacancyDao {
         logger.trace(addedVacanciesCounter + " vacancies added");
     }
 
-    private String getInsertCompanySql(Vacancy vacancy) {
-        Company company = vacancy.getCompany();
-        String[] values = {company.getName(), company.getUrl(), company.getRating() + "", company.getRewiewsUrl()};
-        Sql insertSql = new InsertSql("Companies", values);
-        return insertSql.generate();
-    }
-
     private String getInsertVacancySql(Vacancy vacancy) {
         String[] values = {vacancy.getTitle(), vacancy.getDescription(), vacancy.getUrl(), vacancy.getSiteName(),
                 vacancy.getCity(), vacancy.getCompany().getName(), vacancy.getSalary(), vacancy.getRating() + ""};
         Sql insertSql = new InsertSql("Vacancies", values);
         return insertSql.generate();
-    }
-
-    private Vacancy getVacancyFromResultSet(ResultSet rs) throws SQLException {
-        Vacancy vacancy = new Vacancy();
-        vacancy.setCity(rs.getString("city"));
-        vacancy.setSalary(rs.getString("salary"));
-        vacancy.setSiteName(rs.getString("site_name"));
-        vacancy.setTitle(rs.getString("title"));
-        vacancy.setUrl(rs.getString("url"));
-        vacancy.setRating(rs.getDouble("rating"));
-        vacancy.setDescription(rs.getString("description"));
-        return vacancy;
-    }
-
-    private Company getCompanyFromResultSet(ResultSet rsCompany) throws SQLException {
-        Company company;
-        company = new Company();
-        company.setName(rsCompany.getString("name"));
-        company.setUrl(rsCompany.getString("url"));
-        company.setRewiewsUrl(rsCompany.getString("reviews_url"));
-        company.setRating(rsCompany.getDouble("rating"));
-        return company;
-    }
-
-    private void executeSqlUpdate(String sql) {
-        try (
-            Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-            Statement stmt = con.createStatement();)
-        {
-            stmt.executeUpdate(sql);
-        } catch (SQLException sqlEx) {
-            logger.error("Exception during sql update.", sqlEx);
-        }
     }
 }

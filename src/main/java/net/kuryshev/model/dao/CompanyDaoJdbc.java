@@ -4,28 +4,58 @@ import net.kuryshev.model.dao.sql.*;
 import net.kuryshev.model.entity.Company;
 import org.apache.log4j.Logger;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
 public class CompanyDaoJdbc implements CompanyDao {
     private static Logger logger = Logger.getLogger(getClassName());
 
-    //TODO: move settings to property file
-    private static final String DRIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
-    private static String JDBC_URL = "jdbc:mysql://localhost:3306/vacancyparser?useSSL=false";
-    private static final String USER = "root";
-    private static final String PASSWORD = "password";
+    private String driverClassName = "com.mysql.jdbc.Driver";
+    private String jdbcUrl = "jdbc:mysql://localhost:3306/vacancyparser?useSSL=false";
+    private String user = "root";
+    private String password = "password";
 
+
+    public CompanyDaoJdbc() {
+        try {
+            Class.forName(driverClassName);
+        } catch (ClassNotFoundException e) {
+            logger.error("Can't find MYSQL driver", e);
+        }
+
+    }
+
+    public CompanyDaoJdbc(String propertiesPath) throws IllegalArgumentException {
+        Properties props = new Properties();
+        try {
+            props.load(new FileReader(propertiesPath));
+        } catch (IOException e) {
+            logger.error("Can't open properties file for dao." + e.getMessage());
+            throw new IllegalArgumentException();
+        }
+        driverClassName = props.getProperty("DRIVER_CLASS_NAME");
+        jdbcUrl = props.getProperty("JDBC_URL");
+        user = props.getProperty("USER");
+        password = props.getProperty("PASSWORD");
+        if (driverClassName == null || jdbcUrl == null || user == null || password == null) {
+            logger.error("Not enough info in property file for dao.");
+            throw new IllegalArgumentException();
+        }
+        try {
+            Class.forName(driverClassName);
+        } catch (ClassNotFoundException e) {
+            logger.error("Can't find MYSQL driver", e);
+        }
+    }
 
     @Override
     public List<Company> selectAll() {
         List<Company> companies = new ArrayList<>();
-        try (Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
+        try (Connection con = DriverManager.getConnection(jdbcUrl, user, password);
              Statement stmt = con.createStatement())
         {
             SelectSql selectSql = new SelectSql("Companies");
@@ -64,9 +94,8 @@ public class CompanyDaoJdbc implements CompanyDao {
         logger.debug("Adding a bunch (" + companies.size() + ") of companies to DB");
 
         int addedVacanciesCounter = 0;
-        try (
-                Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-                Statement stmt = con.createStatement();)
+        try (Connection con = DriverManager.getConnection(jdbcUrl, user, password);
+             Statement stmt = con.createStatement();)
         {
             con.setAutoCommit(false);
             for (Company company : companies) {
@@ -93,7 +122,7 @@ public class CompanyDaoJdbc implements CompanyDao {
 
     @Override
     public void deleteAll() {
-        try (Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
+        try (Connection con = DriverManager.getConnection(jdbcUrl, user, password);
              Statement stmt = con.createStatement())
         {
             Sql sql = new SetSafeUpdatesSql();
@@ -109,5 +138,28 @@ public class CompanyDaoJdbc implements CompanyDao {
     @Override
     public void update(Company company) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Company getCompanyByName(String companyName) {
+        Company company = null;
+        try (Connection con = DriverManager.getConnection(jdbcUrl, user, password);
+             Statement stmt = con.createStatement())
+        {
+            String sql = getSelectSql(companyName);
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) company = getCompanyFromResultSet(rs);
+        } catch (SQLException sqlEx) {
+            logger.error("Error during select.", sqlEx);
+        }
+        return company;
+    }
+
+    private String getSelectSql(String companyName) {
+        SelectSql selectSql = new SelectSql("Companies");
+        String[] columns = {"name"};
+        String[] filters = {companyName};
+        selectSql.setFilters(columns, filters, "OR");
+        return selectSql.generate();
     }
 }

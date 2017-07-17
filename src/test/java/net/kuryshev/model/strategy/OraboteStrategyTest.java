@@ -3,6 +3,7 @@ package net.kuryshev.model.strategy;
 import net.kuryshev.model.entity.Company;
 import org.jsoup.nodes.Document;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class OraboteStrategyTest {
@@ -15,6 +16,7 @@ public class OraboteStrategyTest {
     }
 
     @Test
+    @Ignore
     public void setExternalCompanyInfo() {
         Company company = new Company();
         company.setName("ростелеком");
@@ -25,6 +27,7 @@ public class OraboteStrategyTest {
     }
 
     @Test
+    @Ignore
     public void setExternalCompanyInfoForIncorrectCompany() {
         Company company = new Company();
         company.setName("ростеdsfsdgлеком");

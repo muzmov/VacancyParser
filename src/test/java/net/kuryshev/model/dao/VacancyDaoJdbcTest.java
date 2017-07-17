@@ -8,7 +8,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -18,10 +17,8 @@ import java.util.List;
 
 
 public class VacancyDaoJdbcTest {
-    private static final VacancyDaoJdbc dao = new VacancyDaoJdbc();
+    private static final VacancyDaoJdbc dao = new VacancyDaoJdbc("src/test/resources/dao.properties");
 
-    private static final String DRIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
-    private static final String JDBC_TESTING_URL = "jdbc:mysql://localhost:3306/vacancyparser_test?useSSL=false";
     private static final String JDBC_URL = "jdbc:mysql://localhost:3306/?useSSL=false";
     private static final String user = "root";
     private static final String password = "password";
@@ -36,15 +33,6 @@ public class VacancyDaoJdbcTest {
 
     @Before
     public void setUp() {
-        Class clazz = dao.getClass();
-        try {
-            Field jdbcUrl = clazz.getDeclaredField("JDBC_URL");
-            jdbcUrl.setAccessible(true);
-            jdbcUrl.set(dao, JDBC_TESTING_URL);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
         try (Connection con = DriverManager.getConnection(JDBC_URL, user, password);
             Statement stmt = con.createStatement())
         {

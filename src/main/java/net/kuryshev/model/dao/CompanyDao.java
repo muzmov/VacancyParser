@@ -8,6 +8,8 @@ public interface CompanyDao {
 
     List<Company> selectAll();
 
+    Company getCompanyByName(String companyName);
+
     void add(Company company);
 
     void addAll(List<Company> company);
