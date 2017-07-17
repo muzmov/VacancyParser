@@ -41,9 +41,9 @@ public class OraboteStrategy extends AbstractCompanyStrategy {
 
     @Override
     void fillExternalCompanyInfo(Company company) {
-//        company.setRating(3.3);
-//        company.setRewiewsUrl("mock.url");
-        setExternalCompanyInfo(company);
+        company.setRating(3.3);
+        company.setRewiewsUrl("mock.url");
+      //  setExternalCompanyInfo(company);
     }
 
     void setExternalCompanyInfo(Company company) {

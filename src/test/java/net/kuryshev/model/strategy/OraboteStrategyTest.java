@@ -8,6 +8,7 @@ import org.junit.Test;
 
 public class OraboteStrategyTest {
 
+    @Ignore
     @Test
     public void getDocumentWithPost() {
         Document document = null;

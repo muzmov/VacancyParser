@@ -24,5 +24,10 @@
     <input type="hidden" name = "parsereviews" value="parse">
     <input type="submit" value="Парсить отзывы">
 </form>
+<br>
+<form action = "login.do", method = "post", id = "exitform">
+    <input type="hidden" name = "exit" value="exit">
+    <input type="submit" value="Выход">
+</form>
 </body>
 </html>

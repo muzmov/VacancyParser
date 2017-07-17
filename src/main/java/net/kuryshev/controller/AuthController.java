@@ -22,6 +22,11 @@ public class AuthController extends DependencyInjectionServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (exit(req)) {
+            req.getRequestDispatcher("login.jsp").forward(req, resp);
+            return;
+        }
+
         String login = req.getParameter("login");
         String password = req.getParameter("password");
 
@@ -41,5 +46,14 @@ public class AuthController extends DependencyInjectionServlet {
                 req.setAttribute("error", "Incorrect login or password");
                 req.getRequestDispatcher("error.jsp").forward(req, resp);
         }
+    }
+
+    private boolean exit(HttpServletRequest request) throws ServletException, IOException {
+        if (request.getParameter("exit") != null) {
+            logger.info("User with role " + request.getSession().getAttribute("role") + " exits");
+            request.getSession().removeAttribute("role");
+            return true;
+        }
+        return false;
     }
 }
