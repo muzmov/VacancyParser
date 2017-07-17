@@ -28,6 +28,14 @@
         <servlet-class>net.kuryshev.controller.AuthController</servlet-class>
     </servlet>
     <servlet-mapping>
+        <servlet-name>ProxyController</servlet-name>
+        <url-pattern>/proxy.do</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>ProxyController</servlet-name>
+        <servlet-class>net.kuryshev.controller.ProxyController</servlet-class>
+    </servlet>
+    <servlet-mapping>
         <servlet-name>SearchController</servlet-name>
         <url-pattern>/search.do</url-pattern>
     </servlet-mapping>

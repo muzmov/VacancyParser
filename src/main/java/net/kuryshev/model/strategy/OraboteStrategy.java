@@ -6,23 +6,17 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class OraboteStrategy extends AbstractCompanyStrategy {
-    //TODO: move to properties
-    private static final Proxy[] proxies = {null, //connection without proxy
-            new Proxy(Proxy.Type.HTTP, new InetSocketAddress("212.166.51.221", 80)),
-            new Proxy(Proxy.Type.HTTP, new InetSocketAddress("46.150.172.128", 1080)),
-            new Proxy(Proxy.Type.HTTP, new InetSocketAddress("85.143.218.246", 3128)),
-            new Proxy(Proxy.Type.HTTP, new InetSocketAddress("77.73.64.12", 80)),
-            new Proxy(Proxy.Type.HTTP, new InetSocketAddress("37.57.179.2", 8080)),
-            new Proxy(Proxy.Type.HTTP, new InetSocketAddress("80.91.181.232", 3128)),
-            new Proxy(Proxy.Type.HTTP, new InetSocketAddress("92.112.243.60", 3128)),
-            new Proxy(Proxy.Type.HTTP, new InetSocketAddress("109.108.87.136", 53281)),
-    };
+    private List<Proxy> proxies;
     private static final Random random = new Random();
     private static final int NUM_TRIES = 10;
     private Proxy proxy;
@@ -31,22 +25,34 @@ public class OraboteStrategy extends AbstractCompanyStrategy {
     private static final String COMPANY_RATING_SEARCH_URL = "https://orabote.top/feedback/search";
 
     public OraboteStrategy() {
-        //nextProxy();
-       // proxy = proxies[3];
+        loadProxies();
+    }
+
+    private void loadProxies() {
+        proxies = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader("webapps/VacancyParser/proxies.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                String host = line.split(":")[0];
+                int port = Integer.parseInt(line.split(":")[1]);
+                Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
+                proxies.add(proxy);
+            }
+        }
+        catch (Exception e) {
+            logger.warn("Exception while reading proxies file. Will continue work without proxies.");
+            proxies = new ArrayList<>();
+        }
+        proxies.add(null);
     }
 
     private void nextProxy() {
-        proxy = proxies[random.nextInt(proxies.length)];
+        proxy = proxies.get(random.nextInt(proxies.size()));
     }
 
     @Override
     void fillExternalCompanyInfo(Company company) {
-        company.setRating(3.3);
-        company.setRewiewsUrl("mock.url");
-      //  setExternalCompanyInfo(company);
-    }
-
-    void setExternalCompanyInfo(Company company) {
         Document document = getDocument(COMPANY_RATING_SEARCH_URL, company.getName());
         if (document == null) {
             logger.warn(NUM_TRIES + " tries made. The site didn't respond");
@@ -64,8 +70,8 @@ public class OraboteStrategy extends AbstractCompanyStrategy {
         Element element = elements.first();
         company.setRating(getCompanyRating(element));
         company.setRewiewsUrl(getCompanyRewiewsUrl(element));
-
     }
+
 
     Document getDocument(String url, String company) {
         Document document = null;
@@ -75,10 +81,10 @@ public class OraboteStrategy extends AbstractCompanyStrategy {
                         timeout(5000).
                         proxy(proxy).
                         userAgent("Mozilla/5.0 (Windows NT 6.3; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0").
-                        referrer("https://orabote.top/").
+                        referrer(COMPANY_RATING_URL).
                         data("country", "1", "company_name", company).
                         post();
-                logger.info("The page was read with proxy " + proxy);
+                logger.info("The page for company " + company + " was read with proxy " + proxy);
                 break;
             } catch (IOException e) {
                 logger.warn("Can't get access to " + COMPANY_RATING_URL + " with proxy: " + proxy + ". " + e.getMessage());

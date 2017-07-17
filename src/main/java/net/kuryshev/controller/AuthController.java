@@ -21,30 +21,30 @@ public class AuthController extends DependencyInjectionServlet {
     private UserDao dao;
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (exit(req)) {
-            req.getRequestDispatcher("login.jsp").forward(req, resp);
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (exit(request)) {
+            request.getRequestDispatcher("login.jsp").forward(request, response);
             return;
         }
 
-        String login = req.getParameter("login");
-        String password = req.getParameter("password");
+        String login = request.getParameter("login");
+        String password = request.getParameter("password");
 
         User user = new User(login, password, UserRole.NONE);
         UserRole role = dao.getRole(user);
 
         switch (role) {
             case ADMIN:
-                req.getSession().setAttribute("role", role);
-                resp.sendRedirect("admin.jsp");
+                request.getSession().setAttribute("role", role);
+                response.sendRedirect("admin.jsp");
                 break;
             case USER:
-                req.getSession().setAttribute("role", role);
-                resp.sendRedirect("index.jsp");
+                request.getSession().setAttribute("role", role);
+                response.sendRedirect("index.jsp");
                 break;
             default:
-                req.setAttribute("error", "Incorrect login or password");
-                req.getRequestDispatcher("error.jsp").forward(req, resp);
+                request.setAttribute("error", "Incorrect login or password");
+                request.getRequestDispatcher("error.jsp").forward(request, response);
         }
     }
 
