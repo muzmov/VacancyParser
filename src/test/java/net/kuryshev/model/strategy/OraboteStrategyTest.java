@@ -20,7 +20,7 @@ public class OraboteStrategyTest {
     public void setExternalCompanyInfo() {
         Company company = new Company();
         company.setName("ростелеком");
-        new OraboteStrategy().setExternalCompanyInfo(company);
+        new OraboteStrategy().fillExternalCompanyInfo(company);
         System.out.println(company);
         Assert.assertNotEquals(company.getRewiewsUrl(), "");
         Assert.assertNotEquals(company.getRating(), 0);
@@ -31,7 +31,7 @@ public class OraboteStrategyTest {
     public void setExternalCompanyInfoForIncorrectCompany() {
         Company company = new Company();
         company.setName("ростеdsfsdgлеком");
-        new OraboteStrategy().setExternalCompanyInfo(company);
+        new OraboteStrategy().fillExternalCompanyInfo(company);
         Assert.assertEquals("", company.getRewiewsUrl());
         Assert.assertEquals(0.0, company.getRating(), 0.0001);
     }

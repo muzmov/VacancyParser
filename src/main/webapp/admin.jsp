@@ -18,5 +18,11 @@
     <input type="hidden" name = "delete" value="delete">
     <input type="submit" value="Очистить базу данных">
 </form>
+<br>
+<br>
+<form action = "admin_parse.do", method = "post", id = "parsereviewsform">
+    <input type="hidden" name = "parsereviews" value="parse">
+    <input type="submit" value="Парсить отзывы">
+</form>
 </body>
 </html>

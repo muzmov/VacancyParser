@@ -8,15 +8,15 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
 public class MoikrugStrategy extends AbstractVacancyStrategy {
     private static final String URL_FORMAT = "https://moikrug.ru/vacancies?q=%s&page=%d";
     private static Logger logger = Logger.getLogger(getClassName());
-    private Map<String, Company> companies = new HashMap<>();
+    private static Map<String, Company> companies = new ConcurrentHashMap<>();
 
     @Override
     protected Document getDocument(String searchString, int page) throws IOException {
@@ -71,7 +71,6 @@ public class MoikrugStrategy extends AbstractVacancyStrategy {
             company.setName(companyName);
             company.setUrl("https://moikrug.ru" + element.getElementsByAttributeValue("class", "company_name").attr("href"));
 
-            //TODO: set rewiewsUrl and rating
             company.setRating(0);
             company.setRewiewsUrl("");
 

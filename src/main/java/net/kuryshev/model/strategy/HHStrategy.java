@@ -8,15 +8,15 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
 public class HHStrategy extends AbstractVacancyStrategy {
     private final static String URL_FORMAT = "http://hh.ru/search/vacancy?text=%s&page=%d";
     private static Logger logger = Logger.getLogger(getClassName());
-    private Map<String, Company> companies = new HashMap<>();
+    private static Map<String, Company> companies = new ConcurrentHashMap<>();
 
     public static final String COMPANY_RATING_URL = "https://orabote.top";
     private static final String COMPANY_RATING_SEARCH_URL = "https://orabote.top/feedback/search";
@@ -79,7 +79,8 @@ public class HHStrategy extends AbstractVacancyStrategy {
             company.setName(companyName);
             company.setUrl("http://hh.ru" + element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-employer").attr("href"));
 
-            new OraboteStrategy().setExternalCompanyInfo(company);
+            company.setRating(0);
+            company.setRewiewsUrl("");
             companies.put(companyName, company);
         }
         return company;

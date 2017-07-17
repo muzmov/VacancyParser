@@ -6,9 +6,7 @@ import net.kuryshev.model.VacancyParser;
 import net.kuryshev.model.VacancyParserImpl;
 import net.kuryshev.model.dao.VacancyDao;
 import net.kuryshev.model.entity.Vacancy;
-import net.kuryshev.model.strategy.HHStrategy;
-import net.kuryshev.model.strategy.MoikrugStrategy;
-import net.kuryshev.model.strategy.Provider;
+import net.kuryshev.model.strategy.*;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
@@ -27,7 +25,7 @@ public class AdminController extends DependencyInjectionServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (delete(request)) {
+        if (delete(request) || parseReviews(request)) {
             request.getRequestDispatcher("admin.jsp").forward(request, response);
             return;
         }
@@ -58,6 +56,16 @@ public class AdminController extends DependencyInjectionServlet {
         if (request.getParameter("delete") != null) {
             logger.info("Delete all request accepted");
             dao.deleteAll();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean parseReviews(HttpServletRequest request) throws ServletException, IOException {
+        if (request.getParameter("parsereviews") != null) {
+            logger.info("Parse rewiews request accepted");
+            CompanyStrategy strategy = new OraboteStrategy();
+            strategy.fillCompaniesInfo();
             return true;
         }
         return false;

@@ -1,7 +1,6 @@
 package net.kuryshev.model.strategy;
 
 import net.kuryshev.model.entity.Company;
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -12,10 +11,8 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Random;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
-
 public class OraboteStrategy extends AbstractCompanyStrategy {
-    private static Logger logger = Logger.getLogger(getClassName());
+    //TODO: move to properties
     private static final Proxy[] proxies = {null, //connection without proxy
             new Proxy(Proxy.Type.HTTP, new InetSocketAddress("212.166.51.221", 80)),
             new Proxy(Proxy.Type.HTTP, new InetSocketAddress("46.150.172.128", 1080)),
@@ -33,13 +30,41 @@ public class OraboteStrategy extends AbstractCompanyStrategy {
     private static final String COMPANY_RATING_URL = "https://orabote.top";
     private static final String COMPANY_RATING_SEARCH_URL = "https://orabote.top/feedback/search";
 
-    OraboteStrategy() {
-        nextProxy();
-        proxy = proxies[3];
+    public OraboteStrategy() {
+        //nextProxy();
+       // proxy = proxies[3];
     }
 
     private void nextProxy() {
         proxy = proxies[random.nextInt(proxies.length)];
+    }
+
+    @Override
+    void fillExternalCompanyInfo(Company company) {
+//        company.setRating(3.3);
+//        company.setRewiewsUrl("mock.url");
+        setExternalCompanyInfo(company);
+    }
+
+    void setExternalCompanyInfo(Company company) {
+        Document document = getDocument(COMPANY_RATING_SEARCH_URL, company.getName());
+        if (document == null) {
+            logger.warn(NUM_TRIES + " tries made. The site didn't respond");
+            failedAttempts++;
+            setDefaultExternalCompanyInfo(company);
+            return;
+        }
+        Elements elements = document.getElementsByClass("news");
+        if (elements.isEmpty()) {
+            logger.warn("No info found for company " + company.getName());
+            setDefaultExternalCompanyInfo(company);
+            return;
+        }
+        //TODO: hanlde all the elements?
+        Element element = elements.first();
+        company.setRating(getCompanyRating(element));
+        company.setRewiewsUrl(getCompanyRewiewsUrl(element));
+
     }
 
     Document getDocument(String url, String company) {
@@ -61,26 +86,6 @@ public class OraboteStrategy extends AbstractCompanyStrategy {
             }
         }
         return document;
-    }
-
-    void setExternalCompanyInfo(Company company) {
-        Document document = getDocument(COMPANY_RATING_SEARCH_URL, company.getName());
-        if (document == null) {
-            logger.warn(NUM_TRIES + " tries made. The site didn't respond");
-            setDefaultExternalCompanyInfo(company);
-            return;
-        }
-        Elements elements = document.getElementsByClass("news");
-        if (elements.isEmpty()) {
-            logger.warn("No info found for company " + company.getName());
-            setDefaultExternalCompanyInfo(company);
-            return;
-        }
-        //TODO: hanlde all the elements?
-        Element element = elements.first();
-        company.setRating(getCompanyRating(element));
-        company.setRewiewsUrl(getCompanyRewiewsUrl(element));
-
     }
 
     private void setDefaultExternalCompanyInfo(Company company) {
