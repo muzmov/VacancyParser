@@ -12,6 +12,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class CompanyDaoJdbcTest {
@@ -76,10 +78,17 @@ public class CompanyDaoJdbcTest {
         List<Company> addedCompanies = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
             Company company = new Company("test" + i, "test" + i, "test" + i, 1);
+            addedCompanies.add(company);
         }
         dao.addAll(addedCompanies);
         List<Company> companies = dao.selectAll();
         Assert.assertEquals(100, companies.size());
+        Collections.sort(addedCompanies, new Comparator<Company>() {
+            @Override
+            public int compare(Company o1, Company o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
         Assert.assertEquals(addedCompanies, companies);
     }
 
@@ -89,6 +98,7 @@ public class CompanyDaoJdbcTest {
         List<Company> addedCompanies = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
             Company company = new Company("test" + i, "test" + i, "test" + i, 1);
+            addedCompanies.add(company);
         }
         dao.addAll(addedCompanies);
         dao.deleteAll();

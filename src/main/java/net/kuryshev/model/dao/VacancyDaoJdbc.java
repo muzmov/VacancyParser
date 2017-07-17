@@ -144,53 +144,52 @@ public class VacancyDaoJdbc implements VacancyDao {
 
         int addedVacanciesCounter = 0;
         try (
-                Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-                PreparedStatement stmtSelectCompany = con.prepareStatement(SELECT_COMPANY_SQL);
-                PreparedStatement stmtInsertVacancy = con.prepareStatement(INSERT_VACANCY_SQL);
-                PreparedStatement stmtInsertCompany = con.prepareStatement(INSERT_COMPANY_SQL))
+            Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
+            Statement stmt = con.createStatement();)
         {
+            con.setAutoCommit(false);
             for (Vacancy vacancy : vacancies) {
                 try {
                     if (!companyNameSet.contains(vacancy.getCompany().getName())) {
-                        stmtSelectCompany.setString(1, vacancy.getCompany().getName());
-                        ResultSet rsCompany = stmtSelectCompany.executeQuery();
+                        String[] columns = {"name"};
+                        String[] filters = {vacancy.getCompany().getName()};
+                        SelectSql selectSql = new SelectSql("Companies");
+                        selectSql.setFilters(columns, filters, "OR");
+                        String sqlCompany = selectSql.generate();
+                        rsCompany = stmt.executeQuery(sqlCompany);
                         if (!rsCompany.next()) {
-                            setInsertCompanyStmt(stmtInsertCompany, vacancy.getCompany());
-                            stmtInsertCompany.executeUpdate();
+                            String sqlInsertCompany = getInsertCompanySql(vacancy);
+                            stmt.executeUpdate(sqlInsertCompany);
                         }
                         rsCompany.close();
                         companyNameSet.add(vacancy.getCompany().getName());
                     }
-                    setInsertVacancyStmt(stmtInsertVacancy, vacancy);
-                    stmtInsertVacancy.executeUpdate();
+                    String sql = getInsertVacancySql(vacancy);
+                    stmt.executeUpdate(sql);
                     ++addedVacanciesCounter;
                 } catch (Exception e) {
-                    logger.warn("This vacancy was not added to database:" + vacancy + ". " + e.getMessage());
+                    logger.warn("This vacancy was not added to database:" + vacancy, e);
                 }
             }
+            con.commit();
         } catch (SQLException sqlEx) {
             logger.error("Major SQL exception occured in addAll.", sqlEx);
         }
         logger.trace(addedVacanciesCounter + " vacancies added");
     }
 
-    private void setInsertCompanyStmt(PreparedStatement stmt, Company company) throws SQLException {
-        stmt.setString(1, company.getName());
-        stmt.setString(2, company.getUrl());
-        stmt.setDouble(3, company.getRating());
-        stmt.setString(4, company.getRewiewsUrl());
+    private String getInsertCompanySql(Vacancy vacancy) {
+        Company company = vacancy.getCompany();
+        String[] values = {company.getName(), company.getUrl(), company.getRating() + "", company.getRewiewsUrl()};
+        Sql insertSql = new InsertSql("Companies", values);
+        return insertSql.generate();
     }
 
-    private void setInsertVacancyStmt(PreparedStatement stmt, Vacancy vacancy) throws SQLException {
-        stmt.setString(1, vacancy.getTitle());
-        stmt.setString(2, vacancy.getDescription());
-        stmt.setString(3, vacancy.getUrl());
-        stmt.setString(4, vacancy.getSiteName());
-        stmt.setString(5, vacancy.getCity());
-        stmt.setString(6, vacancy.getCompany().getName());
-        stmt.setString(7, vacancy.getSalary());
-        stmt.setDouble(8, vacancy.getRating());
-
+    private String getInsertVacancySql(Vacancy vacancy) {
+        String[] values = {vacancy.getTitle(), vacancy.getDescription(), vacancy.getUrl(), vacancy.getSiteName(),
+                vacancy.getCity(), vacancy.getCompany().getName(), vacancy.getSalary(), vacancy.getRating() + ""};
+        Sql insertSql = new InsertSql("Vacancies", values);
+        return insertSql.generate();
     }
 
     private Vacancy getVacancyFromResultSet(ResultSet rs) throws SQLException {

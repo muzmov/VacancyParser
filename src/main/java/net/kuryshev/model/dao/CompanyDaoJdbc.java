@@ -1,15 +1,14 @@
 package net.kuryshev.model.dao;
 
-import net.kuryshev.model.dao.sql.DeleteSql;
-import net.kuryshev.model.dao.sql.SelectSql;
-import net.kuryshev.model.dao.sql.SetSafeUpdatesSql;
-import net.kuryshev.model.dao.sql.Sql;
+import net.kuryshev.model.dao.sql.*;
 import net.kuryshev.model.entity.Company;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
@@ -60,8 +59,36 @@ public class CompanyDaoJdbc implements CompanyDao {
     }
 
     @Override
-    public void addAll(List<Company> company) {
+    public void addAll(List<Company> companies) {
+        Set<String> companyNameSet = new HashSet<>();
+        logger.debug("Adding a bunch (" + companies.size() + ") of companies to DB");
 
+        int addedVacanciesCounter = 0;
+        try (
+                Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
+                Statement stmt = con.createStatement();)
+        {
+            con.setAutoCommit(false);
+            for (Company company : companies) {
+                try {
+                    String sql = getInsertCompanySql(company);
+                    stmt.executeUpdate(sql);
+                    ++addedVacanciesCounter;
+                } catch (Exception e) {
+                    logger.warn("This company was not added to database:" + company, e);
+                }
+            }
+            con.commit();
+        } catch (SQLException sqlEx) {
+            logger.error("Major SQL exception occured in addAll.", sqlEx);
+        }
+        logger.trace(addedVacanciesCounter + " companies added");
+    }
+
+    private String getInsertCompanySql(Company company) {
+        String[] values = {company.getName(), company.getUrl(), company.getRating() + "", company.getRewiewsUrl()};
+        Sql insertSql = new InsertSql("Companies", values);
+        return insertSql.generate();
     }
 
     @Override
@@ -81,6 +108,6 @@ public class CompanyDaoJdbc implements CompanyDao {
 
     @Override
     public void update(Company company) {
-
+        throw new UnsupportedOperationException();
     }
 }
