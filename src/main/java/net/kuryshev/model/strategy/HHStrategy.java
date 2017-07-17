@@ -13,10 +13,13 @@ import java.util.Map;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
-public class HHStrategy extends AbstractStrategy {
+public class HHStrategy extends AbstractVacancyStrategy {
     private final static String URL_FORMAT = "http://hh.ru/search/vacancy?text=%s&page=%d";
     private static Logger logger = Logger.getLogger(getClassName());
     private Map<String, Company> companies = new HashMap<>();
+
+    public static final String COMPANY_RATING_URL = "https://orabote.top";
+    private static final String COMPANY_RATING_SEARCH_URL = "https://orabote.top/feedback/search";
 
     @Override
     protected Document getDocument(String searchString, int page) throws IOException {
@@ -31,6 +34,7 @@ public class HHStrategy extends AbstractStrategy {
                 .referrer("none")
                 .get();
     }
+
 
     @Override
     protected String parseTitle(Element element) {
@@ -75,12 +79,15 @@ public class HHStrategy extends AbstractStrategy {
             company.setName(companyName);
             company.setUrl("http://hh.ru" + element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-employer").attr("href"));
 
-            //TODO: set rewiewsUrl and rating
-            company.setRating(0);
-            company.setRewiewsUrl("");
+            new OraboteStrategy().setExternalCompanyInfo(company);
             companies.put(companyName, company);
         }
         return company;
+    }
+
+    private void setDefaultExternalCompanyInfo(Company company) {
+        company.setRating(0);
+        company.setRewiewsUrl("");
     }
 
     @Override

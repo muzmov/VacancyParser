@@ -32,10 +32,10 @@ public class RoleFilter implements Filter {
             httpResponse.sendRedirect("login.jsp");
             return;
         }
-        if ((url.matches(".*index.jsp.*") || url.matches(".*/") || url.matches(".*search.do.*")) && role != UserRole.ADMIN && role != UserRole.USER) {
+/*        if ((url.matches(".*index.jsp.*") || url.matches(".*//*") || url.matches(".*search.do.*")) && role != UserRole.ADMIN && role != UserRole.USER) {
             httpResponse.sendRedirect("login.jsp");
             return;
-        }
+        }*/
         chain.doFilter(request, response);
     }
 

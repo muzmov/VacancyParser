@@ -18,6 +18,7 @@ public class SelectSql implements Sql {
         this.columns = columns;
         this.filters = filters;
         this.connector = connector;
+        makeFiltersSafe();
     }
 
     @Override
@@ -46,4 +47,11 @@ public class SelectSql implements Sql {
             return result;
         }
     }
+
+    private void makeFiltersSafe() {
+        for (int i = 0; i < filters.length; i++) {
+            filters[i] = filters[i].replaceAll("'", "''");
+        }
+    }
+
 }

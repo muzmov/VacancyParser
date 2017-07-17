@@ -10,8 +10,6 @@ public interface VacancyDao {
 
     List<Vacancy> selectContaining(String query, SearchParams params);
 
-    void delete(int id);
-
     void deleteAll();
 
     void add(Vacancy vacancy);

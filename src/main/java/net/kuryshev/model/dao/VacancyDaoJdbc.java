@@ -23,8 +23,12 @@ public class VacancyDaoJdbc implements VacancyDao {
     private static final String USER = "root";
     private static final String PASSWORD = "password";
 
-    private Connection con;
-    private Statement stmt, stmtCompany;
+    private static final String INSERT_VACANCY_SQL =  "INSERT INTO Vacancies (title, description, url, site_name, city, " +
+            "company, salary, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_COMPANY_SQL = "INSERT INTO Companies (name, url, rating, reviews_url) " +
+            "VALUES (?, ?, ?, ?)";
+    private static final String SELECT_COMPANY_SQL = "SELECT * FROM Companies WHERE name = ?";
+
     private ResultSet rs, rsCompany;
 
     static {
@@ -80,14 +84,14 @@ public class VacancyDaoJdbc implements VacancyDao {
         List<Vacancy> vacancies = new ArrayList<>();
         Map<String, Company> companyMap = new HashMap<>();
 
-        try {
-            con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-            stmt = con.createStatement();
-            rs = stmt.executeQuery(sql);
-            stmtCompany = con.createStatement();
+        try (Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
+            Statement stmt = con.createStatement();
+            Statement stmtCompany = con.createStatement())
+        {
+            ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
-                Vacancy vacancy = getVacancyFromResultSet();
+                Vacancy vacancy = getVacancyFromResultSet(rs);
 
                 String companyName = rs.getString("company");
                 Company company;
@@ -97,9 +101,9 @@ public class VacancyDaoJdbc implements VacancyDao {
                     SelectSql selectSql = new SelectSql("Companies");
                     selectSql.setFilters(columns, filters, "OR");
                     String sqlCompany = selectSql.generate();
-                    rsCompany = stmtCompany.executeQuery(sqlCompany);
+                    ResultSet rsCompany = stmtCompany.executeQuery(sqlCompany);
                     if (rsCompany.next()) {
-                        company = getCompanyFromResultSet();
+                        company = getCompanyFromResultSet(rsCompany);
                         companyMap.put(companyName, company);
                     }
                 }
@@ -107,20 +111,9 @@ public class VacancyDaoJdbc implements VacancyDao {
                 vacancies.add(vacancy);
             }
         } catch (SQLException sqlEx) {
-            sqlEx.printStackTrace();
-        } finally {
-            try { con.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
-            try { stmt.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
-            try { stmtCompany.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
-            try { rs.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
-            try { rsCompany.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
+            logger.error("Error during select.", sqlEx);
         }
         return vacancies;
-    }
-
-    @Override
-    public void delete(int id) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -150,57 +143,57 @@ public class VacancyDaoJdbc implements VacancyDao {
         logger.debug("Adding a bunch (" + vacancies.size() + ") of vacancies to DB");
 
         int addedVacanciesCounter = 0;
-        try {
-            con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-            stmt = con.createStatement();
-
+        try (
+                Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
+                PreparedStatement stmtSelectCompany = con.prepareStatement(SELECT_COMPANY_SQL);
+                PreparedStatement stmtInsertVacancy = con.prepareStatement(INSERT_VACANCY_SQL);
+                PreparedStatement stmtInsertCompany = con.prepareStatement(INSERT_COMPANY_SQL))
+        {
             for (Vacancy vacancy : vacancies) {
                 try {
                     if (!companyNameSet.contains(vacancy.getCompany().getName())) {
-                        String[] columns = {"name"};
-                        String[] filters = {vacancy.getCompany().getName()};
-                        SelectSql selectSql = new SelectSql("Companies");
-                        selectSql.setFilters(columns, filters, "OR");
-                        String sqlCompany = selectSql.generate();
-                        rsCompany = stmt.executeQuery(sqlCompany);
+                        stmtSelectCompany.setString(1, vacancy.getCompany().getName());
+                        ResultSet rsCompany = stmtSelectCompany.executeQuery();
                         if (!rsCompany.next()) {
-                            String sqlInsertCompany = getInsertCompanySql(vacancy);
-                            stmt.executeUpdate(sqlInsertCompany);
+                            setInsertCompanyStmt(stmtInsertCompany, vacancy.getCompany());
+                            stmtInsertCompany.executeUpdate();
                         }
                         rsCompany.close();
                         companyNameSet.add(vacancy.getCompany().getName());
                     }
-                    String sql = getInsertVacancySql(vacancy);
-                    stmt.executeUpdate(sql);
+                    setInsertVacancyStmt(stmtInsertVacancy, vacancy);
+                    stmtInsertVacancy.executeUpdate();
                     ++addedVacanciesCounter;
                 } catch (Exception e) {
-                    logger.warn("This vacancy was not added to database:" + vacancy, e);
+                    logger.warn("This vacancy was not added to database:" + vacancy + ". " + e.getMessage());
                 }
             }
         } catch (SQLException sqlEx) {
             logger.error("Major SQL exception occured in addAll.", sqlEx);
-        } finally {
-            try { con.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
-            try { stmt.close(); } catch(SQLException | NullPointerException se) {/*NOP*/}
         }
         logger.trace(addedVacanciesCounter + " vacancies added");
     }
 
-    private String getInsertCompanySql(Vacancy vacancy) {
-        Company company = vacancy.getCompany();
-        String[] values = {company.getName(), company.getUrl(), company.getRating() + "", company.getRewiewsUrl()};
-        Sql insertSql = new InsertSql("Companies", values);
-        return insertSql.generate();
+    private void setInsertCompanyStmt(PreparedStatement stmt, Company company) throws SQLException {
+        stmt.setString(1, company.getName());
+        stmt.setString(2, company.getUrl());
+        stmt.setDouble(3, company.getRating());
+        stmt.setString(4, company.getRewiewsUrl());
     }
 
-    private String getInsertVacancySql(Vacancy vacancy) {
-        String[] values = {vacancy.getTitle(), vacancy.getDescription(), vacancy.getUrl(), vacancy.getSiteName(),
-                vacancy.getCity(), vacancy.getCompany().getName(), vacancy.getSalary(), vacancy.getRating() + ""};
-        Sql insertSql = new InsertSql("Vacancies", values);
-        return insertSql.generate();
+    private void setInsertVacancyStmt(PreparedStatement stmt, Vacancy vacancy) throws SQLException {
+        stmt.setString(1, vacancy.getTitle());
+        stmt.setString(2, vacancy.getDescription());
+        stmt.setString(3, vacancy.getUrl());
+        stmt.setString(4, vacancy.getSiteName());
+        stmt.setString(5, vacancy.getCity());
+        stmt.setString(6, vacancy.getCompany().getName());
+        stmt.setString(7, vacancy.getSalary());
+        stmt.setDouble(8, vacancy.getRating());
+
     }
 
-    private Vacancy getVacancyFromResultSet() throws SQLException {
+    private Vacancy getVacancyFromResultSet(ResultSet rs) throws SQLException {
         Vacancy vacancy = new Vacancy();
         vacancy.setCity(rs.getString("city"));
         vacancy.setSalary(rs.getString("salary"));
@@ -212,7 +205,7 @@ public class VacancyDaoJdbc implements VacancyDao {
         return vacancy;
     }
 
-    private Company getCompanyFromResultSet() throws SQLException {
+    private Company getCompanyFromResultSet(ResultSet rsCompany) throws SQLException {
         Company company;
         company = new Company();
         company.setName(rsCompany.getString("name"));
@@ -223,15 +216,13 @@ public class VacancyDaoJdbc implements VacancyDao {
     }
 
     private void executeSqlUpdate(String sql) {
-        try {
-            con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-            stmt = con.createStatement();
+        try (
+            Connection con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
+            Statement stmt = con.createStatement();)
+        {
             stmt.executeUpdate(sql);
         } catch (SQLException sqlEx) {
-            sqlEx.printStackTrace();
-        } finally {
-            try { con.close(); } catch(SQLException | NullPointerException se) { /*NOP*/ }
-            try { stmt.close(); } catch(SQLException | NullPointerException se) { /*NOP*/ }
+            logger.error("Exception during sql update.", sqlEx);
         }
     }
 }

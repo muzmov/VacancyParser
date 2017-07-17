@@ -14,7 +14,7 @@ import java.util.List;
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
 
-public abstract class AbstractStrategy implements Strategy {
+public abstract class AbstractVacancyStrategy implements VacancyStrategy {
     private static Logger logger = Logger.getLogger(getClassName());
     private static final int MAX_PAGES = 10;
 

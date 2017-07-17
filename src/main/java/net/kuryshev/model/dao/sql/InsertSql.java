@@ -21,6 +21,7 @@ public class InsertSql implements Sql {
         if (table.equals(USERS_TABLE) && (values == null || values.length != 3)) throw new IllegalArgumentException();
         this.table = table;
         this.values = values;
+        makeValuesSafe();
     }
 
     public String generate() {
@@ -32,5 +33,11 @@ public class InsertSql implements Sql {
         if (table.equals(USERS_TABLE))
             return String.format(INSERT_USER_SQL, USERS_TABLE, values[0], values[1], values[2]);
         return "";
+    }
+
+    private void makeValuesSafe() {
+        for (int i = 0; i < values.length; i++) {
+            values[i] = values[i].replaceAll("'", "''");
+        }
     }
 }

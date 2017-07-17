@@ -12,9 +12,9 @@ public class Provider {
     private int numThreads = 10;
     private static Logger logger = Logger.getLogger(getClassName());
 
-    private Strategy strategy;
+    private VacancyStrategy strategy;
 
-    public Provider(Strategy strategy, int numThreads) {
+    public Provider(VacancyStrategy strategy, int numThreads) {
         this.numThreads = numThreads;
         this.strategy = strategy;
     }
@@ -46,7 +46,7 @@ public class Provider {
         return vacancies;
     }
 
-    public Strategy getStrategy() {
+    public VacancyStrategy getStrategy() {
         return strategy;
     }
 }

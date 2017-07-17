@@ -17,9 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * Created by 1 on 27.06.2017.
- */
 public class VacancyDaoJdbcTest {
     private static final VacancyDaoJdbc dao = new VacancyDaoJdbc();
 
@@ -32,11 +29,9 @@ public class VacancyDaoJdbcTest {
     "USE vacancyparser_test",
     "SET SQL_SAFE_UPDATES = 0",
     "DROP TABLE IF EXISTS Vacancies",
-    "CREATE TABLE Vacancies (\n" + "  id          INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" + "  title       TEXT NOT NULL,\n" + "  description TEXT,\n" + "  url         TEXT NOT NULL ,\n" + "  site_name   VARCHAR(32) NOT NULL ,\n" + "  city        VARCHAR(32) NOT NULL ,\n" + "  company  VARCHAR(255) NOT NULL ,\n" + "  salary      VARCHAR(255),\n" + "  rating      DOUBLE\n" + ")",
+    "CREATE TABLE Vacancies (\n" + "  id          INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" + "  title       TEXT NOT NULL,\n" + "  description TEXT,\n" + "  url         VARCHAR(255) NOT NULL UNIQUE,\n" + "  site_name   VARCHAR(32) NOT NULL ,\n" + "  city        VARCHAR(32) NOT NULL ,\n" + "  company  VARCHAR(255) NOT NULL ,\n" + "  salary      VARCHAR(255),\n" + "  rating      DOUBLE\n" + ")",
     "DROP TABLE IF EXISTS Companies",
-    "CREATE TABLE Companies (\n" + " name        VARCHAR(255) NOT NULL PRIMARY KEY ,\n" + "  url         VARCHAR(255) NOT NULL,\n" + "  rating      DOUBLE,\n" + "  reviews_url TEXT\n" + ")",
-            "INSERT INTO Companies (name, url, rating, reviews_url)\n" + "VALUES\n" + "  ('GlowByte', 'http://glowbyte.com', 4.4, 'http://linktoreviews.ru'),\n" + "  ('I-TECO', 'http://i-teco.com', 4.4, 'http://linktoreviews.ru'),\n" + "  ('Rostelecom', 'http://rostele.com', 4.4, 'http://linktoreviews.ru')",
-            "INSERT INTO Vacancies (title, description, url, site_name, city, company, salary, rating)\n" + "VALUES\n" + "  ('Vacancy #1', 'primitive description', 'http://hh/.ru', 'hh.ru', 'Moscow', 'GlowByte', '100 000 - 150 000 roubles', 4.4),\n" + "  ('Vacancy #2', 'primitive description', 'http://hh/.ru', 'hh.ru', 'Moscow', 'I-TECO', '10 000 - 150 000 roubles', 4.5),\n" + "  ('Vacancy #3', 'primitive description', 'http://hh/.ru', 'hh.ru', 'Moscow', 'Rostelecom', '10 000 - 15 000 roubles', 4.6)"};
+    "CREATE TABLE Companies (\n" + " name        VARCHAR(255) NOT NULL PRIMARY KEY ,\n" + "  url         VARCHAR(255) NOT NULL,\n" + "  rating      DOUBLE,\n" + "  reviews_url TEXT\n" + ")"};
     private static final String TEAR_DOWN_SQL = "DROP SCHEMA IF EXISTS vacancyparser_test";
 
     @Before
@@ -46,59 +41,59 @@ public class VacancyDaoJdbcTest {
             Field jdbcUrl = clazz.getDeclaredField("JDBC_URL");
             jdbcUrl.setAccessible(true);
             jdbcUrl.set(dao, JDBC_TESTING_URL);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
 
-        Connection con = null;
-        Statement stmt = null;
-
-        try {
-            con = DriverManager.getConnection(JDBC_URL, user, password);
-            stmt = con.createStatement();
-            for (int i = 0; i < 9; i++) {
+        try (Connection con = DriverManager.getConnection(JDBC_URL, user, password);
+            Statement stmt = con.createStatement())
+        {
+            for (int i = 0; i < SET_UP_SQL.length; i++) {
                 stmt.executeUpdate(SET_UP_SQL[i]);
             }
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
-        } finally {
-            try { con.close(); } catch(SQLException se) { /*can't do anything */ }
-            try { stmt.close(); } catch(SQLException se) { /*can't do anything */ }
         }
     }
 
     @Test
-    public void selectAll_FromHaving3_Test() throws Exception {
-        List<Vacancy> result = dao.selectAll();
-        Assert.assertNotNull(result);
-        Assert.assertEquals(3, result.size());
-        Assert.assertNotNull(result.get(0));
-        Assert.assertNotNull(result.get(0).getCompany());
-    }
-
-    @Test
-    public void selectAll_FromEmpty_Test() throws Exception {
+    public void selectAllFromEmpty() throws Exception {
         dao.deleteAll();
         List<Vacancy> result = dao.selectAll();
         Assert.assertNotNull(result);
-        Assert.assertEquals(result.size(), 0);
+        Assert.assertEquals(0, result.size());
     }
 
     @Test
-    public void addOne_SelectAll_Test() {
+    public void addOneSelectAll() {
         dao.deleteAll();
         Vacancy vacancy = new Vacancy("test", "test", "test","test","test","test", 5, new Company("test", "test", "test", 4.4));
         dao.add(vacancy);
         List<Vacancy> result = dao.selectAll();
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result.size(), 1);
-        Assert.assertEquals(result.get(0), vacancy);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals(vacancy, result.get(0));
     }
 
     @Test
-    public void add100_SelectAll_Test() {
+    public void add100SelectAllTestTime() {
+        List<Vacancy> vacancies = new ArrayList<>();
+        dao.deleteAll();
+        for (int i = 0; i < 100; i++) {
+            Vacancy vacancy = new Vacancy("test" + i,"test" + i,"test" + i,"test" + i,"test" + i,"test" + i, 5, new Company());
+            vacancies.add(vacancy);
+        }
+        long start = System.currentTimeMillis();
+        dao.addAll(vacancies);
+        long finish = System.currentTimeMillis();
+        System.out.println("100 vacancies added in " + (finish - start));
+        start = System.currentTimeMillis();
+        vacancies = dao.selectAll();
+        finish = System.currentTimeMillis();
+        System.out.println("100 vacancies selected in " + (finish - start));
+    }
+
+    @Test
+    public void add100SelectAllTestSize() {
         List<Vacancy> vacancies = new ArrayList<>();
         dao.deleteAll();
         for (int i = 0; i < 100; i++) {
@@ -107,12 +102,29 @@ public class VacancyDaoJdbcTest {
         }
         dao.addAll(vacancies);
         vacancies = dao.selectAll();
-        Assert.assertNotNull(vacancies);
-        Assert.assertEquals(vacancies.size(), 100);
+        Assert.assertEquals(100, vacancies.size());
     }
 
     @Test
-    public void addMany_SearchContaining_Test() {
+    public void add100SelectAllTestCompanies() {
+        List<Vacancy> vacancies = new ArrayList<>();
+        List<Company> companies = new ArrayList<>();
+        dao.deleteAll();
+        for (int i = 0; i < 10; i++) {
+            Company company = new Company("test" + i,"test" + i,"test" + i, i);
+            companies.add(company);
+        }
+        for (int i = 0; i < 100; i++) {
+            Vacancy vacancy = new Vacancy("test" + i,"test" + i,"test" + i,"test" + i,"test" + i,"test" + i, 5, companies.get(i / 10));
+            vacancies.add(vacancy);
+        }
+        dao.addAll(vacancies);
+        List<Vacancy> results = dao.selectAll();
+        Assert.assertEquals(vacancies, results);
+    }
+
+    @Test
+    public void add100SelectContainingInTitle() {
         List<Vacancy> vacancies = new ArrayList<>();
         dao.deleteAll();
         for (int i = 0; i < 100; i++) {
@@ -121,12 +133,63 @@ public class VacancyDaoJdbcTest {
         }
         dao.addAll(vacancies);
         vacancies = dao.selectContaining("1", SearchParams.SEARCH_IN_TITLE);
-        Assert.assertNotNull(vacancies);
-        Assert.assertEquals(vacancies.size(), 19);
+        Assert.assertEquals(19, vacancies.size());
     }
 
     @Test
-    public void addMany_DeleteAll_Test() {
+    public void add100SelectContainingInDescription() {
+        List<Vacancy> vacancies = new ArrayList<>();
+        dao.deleteAll();
+        for (int i = 0; i < 100; i++) {
+            Vacancy vacancy = new Vacancy("test" + i, "test" + i,"test" + i,"test" + i,"test" + i,"test" + i, 5, new Company());
+            vacancies.add(vacancy);
+        }
+        dao.addAll(vacancies);
+        vacancies = dao.selectContaining("1", SearchParams.SEARCH_IN_DESCRIPTION);
+        Assert.assertEquals(19, vacancies.size());
+    }
+
+    @Test
+    public void add100SelectContainingInTitleOrDescription() {
+        List<Vacancy> vacancies = new ArrayList<>();
+        dao.deleteAll();
+        for (int i = 0; i < 100; i++) {
+            Vacancy vacancy = new Vacancy("test" + i, "test" + i,"test" + i,"test" + i,"test" + i,"test" + i, 5, new Company());
+            vacancies.add(vacancy);
+        }
+        dao.addAll(vacancies);
+        vacancies = dao.selectContaining("1", SearchParams.SEARCH_IN_TITLE_AND_DESCRIPTION);
+        Assert.assertEquals(19, vacancies.size());
+    }
+
+    @Test
+    public void add100WithSpecialSymbolsSelectAll() {
+        List<Vacancy> vacancies = new ArrayList<>();
+        dao.deleteAll();
+        for (int i = 0; i < 100; i++) {
+            Vacancy vacancy = new Vacancy("test'" + i, "test'" + i,"test'" + i,"test'" + i,"test'" + i,"test'" + i, 5, new Company());
+            vacancies.add(vacancy);
+        }
+        dao.addAll(vacancies);
+        vacancies = dao.selectAll();
+        Assert.assertEquals(100, vacancies.size());
+    }
+
+    @Test
+    public void add100WithSpecialSymbolsSelectContaining() {
+        List<Vacancy> vacancies = new ArrayList<>();
+        dao.deleteAll();
+        for (int i = 0; i < 100; i++) {
+            Vacancy vacancy = new Vacancy("test'" + i, "test'" + i,"test'" + i,"test'" + i,"test'" + i,"test'" + i, 5, new Company());
+            vacancies.add(vacancy);
+        }
+        dao.addAll(vacancies);
+        vacancies = dao.selectContaining("'1", SearchParams.SEARCH_IN_TITLE);
+        Assert.assertEquals(11, vacancies.size());
+    }
+
+    @Test
+    public void add100DeleteAllSelectAll() {
         List<Vacancy> vacancies = new ArrayList<>();
         dao.deleteAll();
         for (int i = 0; i < 100; i++) {
@@ -135,26 +198,19 @@ public class VacancyDaoJdbcTest {
         dao.addAll(vacancies);
         dao.deleteAll();
         vacancies = dao.selectAll();
-        Assert.assertNotNull(vacancies);
-        Assert.assertEquals(vacancies.size(), 0);
+        Assert.assertEquals(0, vacancies.size());
     }
 
 
     @After
     public void tearDown() {
 
-        Connection con = null;
-        Statement stmt = null;
-
-        try {
-            con = DriverManager.getConnection(JDBC_URL, user, password);
-            stmt = con.createStatement();
+        try (Connection con = DriverManager.getConnection(JDBC_URL, user, password);
+            Statement stmt = con.createStatement())
+        {
             stmt.executeUpdate(TEAR_DOWN_SQL);
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
-        } finally {
-            try { con.close(); } catch(SQLException se) { /*can't do anything */ }
-            try { stmt.close(); } catch(SQLException se) { /*can't do anything */ }
         }
     }
 }

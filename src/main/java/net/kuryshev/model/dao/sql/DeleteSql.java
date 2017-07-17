@@ -17,6 +17,7 @@ public class DeleteSql implements Sql {
         this.columns = columns;
         this.filters = filters;
         this.connector = connector;
+        makeFiltersSafe();
     }
 
     @Override
@@ -30,5 +31,11 @@ public class DeleteSql implements Sql {
             result += " " + columns[columns.length - 1] + " LIKE '" + filters[filters.length - 1] + "'";
         }
         return result;
+    }
+
+    private void makeFiltersSafe() {
+        for (int i = 0; i < filters.length; i++) {
+            filters[i] = filters[i].replaceAll("'", "''");
+        }
     }
 }
