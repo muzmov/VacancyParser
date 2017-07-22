@@ -46,11 +46,12 @@ public class AdminController extends DependencyInjectionServlet {
             return;
         }
 
-        VacancyParser parser = new VacancyParserImpl(providers);
-        List<Vacancy> searchResults = parser.searchContaining(searchString);
-        request.setAttribute("vacancies", searchResults);
-        logger.info(searchResults.size() + " results found");
-        request.getRequestDispatcher("results.jsp").forward(request, response);
+        new Thread(() -> {
+            VacancyParser parser = new VacancyParserImpl(providers);
+            List<Vacancy> searchResults = parser.searchContaining(searchString);
+            logger.info(searchResults.size() + " results found");
+        }).start();
+        request.getRequestDispatcher("admin.jsp").forward(request, response);
     }
 
     private boolean delete(HttpServletRequest request) throws ServletException, IOException {
@@ -65,8 +66,10 @@ public class AdminController extends DependencyInjectionServlet {
     private boolean parseReviews(HttpServletRequest request) throws ServletException, IOException {
         if (request.getParameter("parsereviews") != null) {
             logger.info("Parse rewiews request accepted");
-            CompanyStrategy strategy = new OraboteStrategy();
-            strategy.fillCompaniesInfo();
+            new Thread(() -> {
+                CompanyStrategy strategy = new OraboteStrategy();
+                strategy.fillCompaniesInfo();
+            }).start();
             return true;
         }
         return false;
@@ -76,9 +79,7 @@ public class AdminController extends DependencyInjectionServlet {
         int numThreads = 0;
         try {
             numThreads = Integer.parseInt(request.getParameter("numThreads"));
-        } catch (NumberFormatException e) {
-            /*NOP*/
-        }
+        } catch (NumberFormatException e) {/*NOP*/}
         if (numThreads < 1 || numThreads > 100) return -1;
         else return numThreads;
     }

@@ -41,7 +41,7 @@ public class OraboteStrategy extends AbstractCompanyStrategy {
             }
         }
         catch (Exception e) {
-            logger.warn("Exception while reading proxies file. Will continue work without proxies.");
+            logger.warn("Exception while reading proxies file. Will continue work without proxies.", e);
             proxies = new ArrayList<>();
         }
         proxies.add(null);
