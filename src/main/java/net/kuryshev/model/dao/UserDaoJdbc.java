@@ -8,7 +8,10 @@ import net.kuryshev.model.entity.User;
 import net.kuryshev.model.entity.UserRole;
 import org.apache.log4j.Logger;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.*;
+import java.util.Properties;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
 
@@ -17,18 +20,40 @@ public class UserDaoJdbc implements UserDao {
     private static Logger logger = Logger.getLogger(getClassName());
 
     //TODO: move settings to property file
-    private static final String DRIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
-    private static String JDBC_URL = "jdbc:mysql://localhost:3306/vacancyparser?useSSL=false";
-    private static final String USER = "root";
-    private static final String PASSWORD = "password";
+    private String driverClassName = "com.mysql.jdbc.Driver";
+    private String jdbcUrl = "jdbc:mysql://localhost:3306/vacancyparser?useSSL=false";
+    private String user = "root";
+    private String password = "password";
 
     private Connection con;
     private Statement stmt;
-    private ResultSet rs;
 
-    static {
+    public UserDaoJdbc() {
         try {
-            Class.forName(DRIVER_CLASS_NAME);
+            Class.forName(driverClassName);
+        } catch (ClassNotFoundException e) {
+            logger.error("Can't find MYSQL driver", e);
+        }
+    }
+
+    public void setProperties(String propertiesPath) throws IllegalArgumentException {
+        Properties props = new Properties();
+        try {
+            props.load(new FileReader(propertiesPath));
+        } catch (IOException e) {
+            logger.error("Can't open properties file for dao." + e.getMessage());
+            throw new IllegalArgumentException();
+        }
+        driverClassName = props.getProperty("DRIVER_CLASS_NAME");
+        jdbcUrl = props.getProperty("JDBC_URL");
+        user = props.getProperty("USER");
+        password = props.getProperty("PASSWORD");
+        if (driverClassName == null || jdbcUrl == null || user == null || password == null) {
+            logger.error("Not enough info in property file for dao.");
+            throw new IllegalArgumentException();
+        }
+        try {
+            Class.forName(driverClassName);
         } catch (ClassNotFoundException e) {
             logger.error("Can't find MYSQL driver", e);
         }
@@ -36,15 +61,15 @@ public class UserDaoJdbc implements UserDao {
 
     @Override
     public UserRole getRole(User user) {
-        try {
-            con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-            stmt = con.createStatement();
+        try (Connection con = DriverManager.getConnection(jdbcUrl, this.user, password);
+            Statement stmt = con.createStatement(); )
+        {
             String[] columns = {"login", "password"};
             String[] filters = {user.getLogin(), user.getPassword()};
             SelectSql selectSql = new SelectSql("Users");
             selectSql.setFilters(columns, filters, "AND");
             String sql = selectSql.generate();
-            rs = stmt.executeQuery(sql);
+            ResultSet rs = stmt.executeQuery(sql);
             String role = null;
             if (rs.next())
                 role = rs.getString("role");
@@ -57,18 +82,13 @@ public class UserDaoJdbc implements UserDao {
             logger.error("Major SQL Exception", e);
             return UserRole.NONE;
         }
-        finally {
-            try { con.close();} catch (Exception e) { /*NOP*/ }
-            try { stmt.close();} catch (Exception e) { /*NOP*/ }
-            try { rs.close();} catch (Exception e) {/*NOP*/ }
-        }
     }
 
     @Override
     public void addUser(User user) {
-        try {
-            con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-            stmt = con.createStatement();
+        try (Connection con = DriverManager.getConnection(jdbcUrl, this.user, password);
+             Statement stmt = con.createStatement(); )
+        {
             String[] values = {user.getLogin(), user.getPassword(), user.getRole().toString()};
             Sql insertSql = new InsertSql("Users", values);
             String sql = insertSql.generate();
@@ -77,17 +97,13 @@ public class UserDaoJdbc implements UserDao {
         catch (SQLException e) {
             logger.error("Major SQL Exception", e);
         }
-        finally {
-            try { con.close();} catch (Exception e) { /*NOP*/ }
-            try { stmt.close();} catch (Exception e) { /*NOP*/ }
-        }
     }
 
     @Override
     public void deleteUser(String login) {
-        try {
-            con = DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-            stmt = con.createStatement();
+        try (Connection con = DriverManager.getConnection(jdbcUrl, this.user, password);
+             Statement stmt = con.createStatement(); )
+        {
             String[] filters = {login};
             String[] columns = {"login"};
             DeleteSql deleteSql = new DeleteSql("Users");
@@ -97,10 +113,6 @@ public class UserDaoJdbc implements UserDao {
         }
         catch (SQLException e) {
             logger.error("Major SQL Exception", e);
-        }
-        finally {
-            try { con.close();} catch (Exception e) { /*NOP*/ }
-            try { stmt.close();} catch (Exception e) { /*NOP*/ }
         }
     }
 }

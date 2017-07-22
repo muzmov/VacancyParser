@@ -16,7 +16,7 @@ CREATE TABLE Vacancies (
   company     VARCHAR(255) NOT NULL,
   salary      VARCHAR(255),
   rating      DOUBLE
-);
+) CHARACTER SET utf8;
 
 DROP TABLE IF EXISTS Companies;
 
@@ -25,7 +25,7 @@ CREATE TABLE Companies (
   url         VARCHAR(255) NOT NULL,
   rating      DOUBLE,
   reviews_url TEXT
-);
+) CHARACTER SET utf8;
 
 DROP TABLE  IF EXISTS Users;
 
@@ -33,7 +33,7 @@ CREATE TABLE Users (
   login       VARCHAR(20) NOT NULL PRIMARY KEY,
   password    VARCHAR(255) NOT NULL,
   role        VARCHAR(255) NOT NULL
-);
+) CHARACTER SET utf8;
 
 INSERT INTO Users VALUES
   ('admin', 'password', 'ADMIN'),

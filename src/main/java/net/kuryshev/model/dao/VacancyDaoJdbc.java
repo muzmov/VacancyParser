@@ -24,12 +24,11 @@ public class VacancyDaoJdbc implements VacancyDao {
     private String user = "root";
     private String password = "password";
 
-    private CompanyDao companyDao;
+    private CompanyDaoJdbc companyDao = new CompanyDaoJdbc();
 
     private Map<String, Company> companyMap = new HashMap<>();
 
     public VacancyDaoJdbc() {
-        companyDao = new CompanyDaoJdbc();
         try {
             Class.forName(driverClassName);
         } catch (ClassNotFoundException e) {
@@ -37,7 +36,7 @@ public class VacancyDaoJdbc implements VacancyDao {
         }
     }
 
-    public VacancyDaoJdbc(String propertiesPath) throws IllegalArgumentException {
+    public void setProperties(String propertiesPath) throws IllegalArgumentException {
         Properties props = new Properties();
         try {
             props.load(new FileReader(propertiesPath));
@@ -53,7 +52,7 @@ public class VacancyDaoJdbc implements VacancyDao {
             logger.error("Not enough info in property file for dao.");
             throw new IllegalArgumentException();
         }
-        companyDao = new CompanyDaoJdbc(propertiesPath);
+        companyDao.setProperties(propertiesPath);
         try {
             Class.forName(driverClassName);
         } catch (ClassNotFoundException e) {
@@ -177,6 +176,7 @@ public class VacancyDaoJdbc implements VacancyDao {
     @Override
     public void addAll(List<Vacancy> vacancies) {
         Set<String> companyNameSet = new HashSet<>();
+        List<Company> companies = new ArrayList<>();
         logger.debug("Adding a bunch (" + vacancies.size() + ") of vacancies to DB");
 
         int addedVacanciesCounter = 0;
@@ -186,20 +186,17 @@ public class VacancyDaoJdbc implements VacancyDao {
             con.setAutoCommit(false);
             for (Vacancy vacancy : vacancies) {
                 try {
-                    String companyName = vacancy.getCompany().getName();
-                    if (!companyNameSet.contains(companyName)) {
-                        Company company = companyDao.getCompanyByName(companyName);
-                        if (company == null) companyDao.add(vacancy.getCompany());
-                        companyNameSet.add(vacancy.getCompany().getName());
-                    }
+                    companies.add(vacancy.getCompany());
                     String sql = getInsertVacancySql(vacancy);
-                    stmt.executeUpdate(sql);
+                    stmt.addBatch(sql);
                     ++addedVacanciesCounter;
                 } catch (Exception e) {
-                    logger.warn("This vacancy was not added to database:" + vacancy, e);
+                    logger.warn("Something is wrong with this vacancy:" + vacancy, e);
                 }
             }
+            stmt.executeBatch();
             con.commit();
+            companyDao.addAll(companies);
         } catch (SQLException sqlEx) {
             logger.error("Major SQL exception occured in addAll.", sqlEx);
         }

@@ -1,11 +1,11 @@
 package net.kuryshev.model.dao.sql;
 
 public class InsertSql implements Sql {
-    private static final String INSERT_VACANCY_SQL = "INSERT INTO %s (title, description, url, site_name, city, " +
+    private static final String INSERT_VACANCY_SQL = "INSERT IGNORE INTO %s (title, description, url, site_name, city, " +
             "company, salary, rating) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', %s)";
-    private static final String INSERT_COMPANY_SQL = "INSERT INTO %s (name, url, rating, reviews_url) " +
+    private static final String INSERT_COMPANY_SQL = "INSERT IGNORE INTO %s (name, url, rating, reviews_url) " +
             "VALUES ('%s', '%s', %s, '%s')";
-    private static final String INSERT_USER_SQL = "INSERT INTO %s (login, password, role) VALUES ('%s', '%s', '%s')";
+    private static final String INSERT_USER_SQL = "INSERT IGNORE INTO %s (login, password, role) VALUES ('%s', '%s', '%s')";
     private static final String COMPANIES_TABLE = "Companies";
     private static final String VACANCIES_TABLE = "Vacancies";
     private static final String USERS_TABLE = "Users";

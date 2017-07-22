@@ -21,6 +21,7 @@ public class VacancyParserImpl implements VacancyParser {
     public VacancyParserImpl(Provider... providers) {
         if (providers == null || providers.length == 0) throw new IllegalArgumentException();
         this.providers = providers;
+        dao.setProperties("../webapps/VacancyParser/WEB-INF/classes/dao.properties");
     }
 
     @Override

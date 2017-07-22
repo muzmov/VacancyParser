@@ -55,10 +55,10 @@
                 <artifactId>tomcat7-maven-plugin</artifactId>
                 <version>2.2</version>
                 <configuration>
-                    <url>http://127.0.0.1:8080/manager/text/</url>
+                    <url>http://ec2-54-89-158-194.compute-1.amazonaws.com/manager/text/</url>
                     <server>TomcatServer</server>
                     <username>admin</username>
-                    <password>password</password>
+                    <password>iK4p4EhYXVf7</password>
                     <update>true</update>
                     <path>/VacancyParser</path>
                 </configuration>

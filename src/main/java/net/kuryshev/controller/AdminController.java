@@ -25,6 +25,7 @@ public class AdminController extends DependencyInjectionServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        dao.setProperties("../webapps/VacancyParser/WEB-INF/classes/dao.properties");
         if (delete(request) || parseReviews(request)) {
             request.getRequestDispatcher("admin.jsp").forward(request, response);
             return;

@@ -30,7 +30,7 @@ public class OraboteStrategy extends AbstractCompanyStrategy {
 
     private void loadProxies() {
         proxies = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader("webapps/VacancyParser/proxies.txt"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("../webapps/VacancyParser/proxies.txt"))) {
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim();

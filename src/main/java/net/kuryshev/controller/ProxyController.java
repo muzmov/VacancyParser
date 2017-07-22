@@ -48,7 +48,7 @@ public class ProxyController extends DependencyInjectionServlet {
             error(request, response);
         }
         if (!workingProxies.isEmpty()) {
-            BufferedWriter bw = new BufferedWriter(new FileWriter("webapps/VacancyParser/proxies.txt"));
+            BufferedWriter bw = new BufferedWriter(new FileWriter("../webapps/VacancyParser/proxies.txt"));
             for (String proxy : workingProxies) bw.write(proxy);
             bw.close();
         }

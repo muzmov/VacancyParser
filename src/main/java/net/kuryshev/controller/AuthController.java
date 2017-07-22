@@ -22,6 +22,7 @@ public class AuthController extends DependencyInjectionServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        dao.setProperties("../webapps/VacancyParser/WEB-INF/classes/dao.properties");
         if (exit(request)) {
             request.getRequestDispatcher("login.jsp").forward(request, response);
             return;

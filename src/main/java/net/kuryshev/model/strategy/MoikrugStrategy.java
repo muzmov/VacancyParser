@@ -69,7 +69,11 @@ public class MoikrugStrategy extends AbstractVacancyStrategy {
         if ((company = companies.get(companyName)) == null) {
             company = new Company();
             company.setName(companyName);
-            company.setUrl("https://moikrug.ru" + element.getElementsByAttributeValue("class", "company_name").attr("href"));
+            try {
+                company.setUrl("https://moikrug.ru" + element.getElementsByAttributeValue("class", "company_name").get(0).children().attr("href"));
+            } catch (Exception e) {
+                logger.warn("Can't parse url for company " + companyName + ". " + e.getMessage());
+            }
 
             company.setRating(0);
             company.setRewiewsUrl("");

@@ -13,7 +13,7 @@ import static net.kuryshev.Utils.ClassUtils.getClassName;
 public class DependencyInjectionServlet extends HttpServlet {
     private Logger logger = Logger.getLogger(getClassName());
 
-    private static String PROPERTIES_FILENAME = "webapps/VacancyParser/WEB-INF/classes/injection.properties";
+    private static String PROPERTIES_FILENAME = "../webapps/VacancyParser/WEB-INF/classes/injection.properties";
 
     @Override
     public void init() throws ServletException {
@@ -24,8 +24,8 @@ public class DependencyInjectionServlet extends HttpServlet {
             System.out.println(file.getAbsolutePath());
             appCtx.init(PROPERTIES_FILENAME);
         } catch (IOException e) {
-            logger.error("There is no properties file for injection.", e);
-            throw new ServletException("There is no properties file for injection.", e);
+            logger.error("There is no properties file for injection. Current path is " + System.getProperty("user.dir"), e);
+            throw new ServletException("There is no properties file for injection. Current path is " + System.getProperty("user.dir"), e);
         }
 
         Class clazz = this.getClass();

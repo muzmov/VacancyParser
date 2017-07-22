@@ -22,6 +22,7 @@ public class SearchController extends DependencyInjectionServlet {
     private VacancyDao dao;
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        dao.setProperties("../webapps/VacancyParser/WEB-INF/classes/dao.properties");
         String searchString = request.getParameter("searchString");
         boolean inTitle = request.getParameter("title") != null;
         boolean inDescription = request.getParameter("description") != null;
@@ -39,6 +40,11 @@ public class SearchController extends DependencyInjectionServlet {
         List<Vacancy> searchResults = dao.selectContaining(searchString, params);
         request.setAttribute("vacancies", searchResults);
         logger.info(searchResults.size() + " results found");
-        request.getRequestDispatcher("results.jsp").forward(request, response);
+        request.getRequestDispatcher("index.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.getRequestDispatcher("index.jsp").forward(request, response);
     }
 }

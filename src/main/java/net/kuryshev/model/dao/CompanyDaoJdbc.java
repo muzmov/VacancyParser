@@ -29,7 +29,7 @@ public class CompanyDaoJdbc implements CompanyDao {
 
     }
 
-    public CompanyDaoJdbc(String propertiesPath) throws IllegalArgumentException {
+    public void setProperties(String propertiesPath) throws IllegalArgumentException {
         Properties props = new Properties();
         try {
             props.load(new FileReader(propertiesPath));
@@ -101,12 +101,13 @@ public class CompanyDaoJdbc implements CompanyDao {
             for (Company company : companies) {
                 try {
                     String sql = getInsertCompanySql(company);
-                    stmt.executeUpdate(sql);
+                    stmt.addBatch(sql);
                     ++addedVacanciesCounter;
                 } catch (Exception e) {
-                    logger.warn("This company was not added to database:" + company, e);
+                    logger.warn("Comething is wrong with this company:" + company, e);
                 }
             }
+            stmt.executeBatch();
             con.commit();
         } catch (SQLException sqlEx) {
             logger.error("Major SQL exception occured in addAll.", sqlEx);

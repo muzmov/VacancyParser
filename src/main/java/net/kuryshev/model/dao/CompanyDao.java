@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface CompanyDao {
 
+    public void setProperties(String propertiesPath) throws IllegalArgumentException;
+
     List<Company> selectAll();
 
     Company getCompanyByName(String companyName);

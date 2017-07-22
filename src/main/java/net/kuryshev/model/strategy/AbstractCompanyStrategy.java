@@ -18,6 +18,7 @@ public abstract class AbstractCompanyStrategy implements CompanyStrategy {
 
     @Override
     public void fillCompaniesInfo() {
+        dao.setProperties("../webapps/VacancyParser/WEB-INF/classes/dao.properties");
         List<Company> companies = dao.selectAll();
         for(Company company : companies) {
             if (company.getRewiewsUrl().equals("")) fillExternalCompanyInfo(company);

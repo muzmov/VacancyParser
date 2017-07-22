@@ -17,7 +17,7 @@ import java.util.List;
 
 
 public class VacancyDaoJdbcTest {
-    private static final VacancyDaoJdbc dao = new VacancyDaoJdbc("src/test/resources/dao.properties");
+    private static final VacancyDaoJdbc dao = new VacancyDaoJdbc();
 
     private static final String JDBC_URL = "jdbc:mysql://localhost:3306/?useSSL=false";
     private static final String user = "root";
@@ -33,6 +33,7 @@ public class VacancyDaoJdbcTest {
 
     @Before
     public void setUp() {
+        dao.setProperties("src/test/resources/dao.properties");
         try (Connection con = DriverManager.getConnection(JDBC_URL, user, password);
             Statement stmt = con.createStatement())
         {

@@ -9,6 +9,7 @@
     <title>Вакансии</title>
 </head>
 <body>
+
 <table>
     <tbody>
     <tr>
