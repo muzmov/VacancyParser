@@ -62,6 +62,14 @@
                     <update>true</update>
                     <path>/VacancyParser</path>
                 </configuration>
+<!--                <configuration>
+                    <url>http://localhost:8080/manager/text/</url>
+                    <server>TomcatServer</server>
+                    <username>admin</username>
+                    <password>password</password>
+                    <update>true</update>
+                    <path>/VacancyParser</path>
+                </configuration>-->
             </plugin>
         </plugins>
         <finalName>VacancyParser</finalName>

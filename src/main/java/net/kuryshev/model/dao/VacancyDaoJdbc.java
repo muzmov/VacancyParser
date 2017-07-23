@@ -26,7 +26,8 @@ public class VacancyDaoJdbc implements VacancyDao {
 
     private CompanyDaoJdbc companyDao = new CompanyDaoJdbc();
 
-    private Map<String, Company> companyMap = new HashMap<>();
+    private Map<Vacancy, String> companyMap = new HashMap<>();
+
 
     public VacancyDaoJdbc() {
         try {
@@ -105,14 +106,14 @@ public class VacancyDaoJdbc implements VacancyDao {
         List<Vacancy> vacancies = new ArrayList<>();
 
         try (Connection con = DriverManager.getConnection(jdbcUrl, user, password);
-             Statement stmt = con.createStatement();
-             Statement stmtCompany = con.createStatement())
+             Statement stmt = con.createStatement())
         {
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 Vacancy vacancy = getVacancyFromResultSet(rs);
                 vacancies.add(vacancy);
             }
+            setCompanies(vacancies);
         } catch (SQLException sqlEx) {
             logger.error("Error during select.", sqlEx);
         }
@@ -130,15 +131,20 @@ public class VacancyDaoJdbc implements VacancyDao {
         vacancy.setDescription(rs.getString("description"));
 
         String companyName = rs.getString("company");
-        Company company;
-        if ((company = companyMap.get(companyName)) == null) {
-            company = companyDao.getCompanyByName(companyName);
-            if (company == null) company = new Company();
-            companyMap.put(companyName, company);
-        }
-        vacancy.setCompany(company);
+        companyMap.put(vacancy, companyName);
 
         return vacancy;
+    }
+
+    private void setCompanies(List<Vacancy> vacancies) {
+        Set<String> companyNames = new HashSet<>();
+        for (Vacancy vacancy : vacancies) {
+            companyNames.add(companyMap.get(vacancy));
+        }
+        Map<String, Company> companies = companyDao.getCompaniesByNames(companyNames);
+        for (Vacancy vacancy : vacancies) {
+            vacancy.setCompany(companies.get(companyMap.get(vacancy)));
+        }
     }
 
     @Override
@@ -196,6 +202,7 @@ public class VacancyDaoJdbc implements VacancyDao {
             }
             stmt.executeBatch();
             con.commit();
+            con.setAutoCommit(true);
             companyDao.addAll(companies);
         } catch (SQLException sqlEx) {
             logger.error("Major SQL exception occured in addAll.", sqlEx);

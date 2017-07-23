@@ -33,7 +33,7 @@ public class VacancyDaoJdbcTest {
 
     @Before
     public void setUp() {
-        dao.setProperties("src/test/resources/dao.properties");
+        dao.setProperties("src/test/resources/testdao.properties");
         try (Connection con = DriverManager.getConnection(JDBC_URL, user, password);
             Statement stmt = con.createStatement())
         {

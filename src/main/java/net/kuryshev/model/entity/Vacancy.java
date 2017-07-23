@@ -128,6 +128,8 @@ public class Vacancy {
 
     @Override
     public String toString() {
-        return "Vacancy{" + "title='" + title + '\'' + ", description='" + description + '\'' + ", salary='" + salary + '\'' + ", city='" + city + '\'' + ", siteName='" + siteName + '\'' + ", url='" + url + '\'' + ", rating=" + rating + ", company=" + company + '}';
+        return "Vacancy{" + "title='" + title + '\'' + ", description='" + description + '\'' + ", salary='" + salary +
+                '\'' + ", city='" + city + '\'' + ", siteName='" + siteName + '\'' + ", url='" + url + '\'' + ", rating="
+                + rating + ", company=" + company + '}';
     }
 }

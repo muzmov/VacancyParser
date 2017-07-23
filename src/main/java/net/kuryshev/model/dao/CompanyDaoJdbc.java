@@ -104,11 +104,12 @@ public class CompanyDaoJdbc implements CompanyDao {
                     stmt.addBatch(sql);
                     ++addedVacanciesCounter;
                 } catch (Exception e) {
-                    logger.warn("Comething is wrong with this company:" + company, e);
+                    logger.warn("Something is wrong with this company:" + company, e);
                 }
             }
             stmt.executeBatch();
             con.commit();
+            con.setAutoCommit(true);
         } catch (SQLException sqlEx) {
             logger.error("Major SQL exception occured in addAll.", sqlEx);
         }
@@ -154,6 +155,25 @@ public class CompanyDaoJdbc implements CompanyDao {
             logger.error("Error during select.", sqlEx);
         }
         return company;
+    }
+
+    @Override
+    public Map<String, Company> getCompaniesByNames(Set<String> companyNames) {
+        Map<String, Company> companyMap = new HashMap<>();
+        try (Connection con = DriverManager.getConnection(jdbcUrl, user, password);
+             Statement stmt = con.createStatement())
+        {
+            for (String companyName : companyNames) {
+                Company company = null;
+                String sql = getSelectSql(companyName);
+                ResultSet rs = stmt.executeQuery(sql);
+                if (rs.next()) company = getCompanyFromResultSet(rs);
+                companyMap.put(companyName, company);
+            }
+        } catch (SQLException sqlEx) {
+            logger.error("Error during select.", sqlEx);
+        }
+        return companyMap;
     }
 
     private String getSelectSql(String companyName) {

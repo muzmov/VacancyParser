@@ -10,10 +10,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class CompanyDaoJdbcTest {
     private static final CompanyDaoJdbc dao = new CompanyDaoJdbc();
@@ -32,7 +29,7 @@ public class CompanyDaoJdbcTest {
 
     @Before
     public void setUp() {
-        dao.setProperties("src/test/resources/dao.properties");
+        dao.setProperties("src/test/resources/testdao.properties");
         try (Connection con = DriverManager.getConnection(JDBC_URL, user, password);
              Statement stmt = con.createStatement())
         {
@@ -93,6 +90,25 @@ public class CompanyDaoJdbcTest {
         dao.deleteAll();
         List<Company> companies = dao.selectAll();
         Assert.assertEquals(0, companies.size());
+    }
+
+    @Test
+    public void add100GetByNames() {
+        dao.deleteAll();
+        List<Company> addedCompanies = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            Company company = new Company("test" + i, "test" + i, "test" + i, 1);
+            addedCompanies.add(company);
+        }
+        dao.addAll(addedCompanies);
+        Set<String> names = new HashSet<>();
+        for (int i = 0; i < 10; i++) {
+            names.add("test" + i);
+        }
+        Map<String, Company> companies = dao.getCompaniesByNames(names);
+        for (int i = 0; i < 10; i++) {
+            Assert.assertEquals(addedCompanies.get(i), companies.get("test" + i));
+        }
     }
 
     @After
