@@ -24,11 +24,12 @@ public class ProxyChecker {
                     userAgent("Mozilla/5.0 (Windows NT 6.3; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0").
                     referrer("").
                     get();
+            if (document.getElementsByTag("title").text().isEmpty()) throw new IOException("Empty title");
             logger.info(proxy + " is OK");
         } catch (IOException e) {
             logger.info(proxy + " is not OK: " + e.getMessage());
             return false;
         }
-        return document != null;
+        return true;
     }
 }

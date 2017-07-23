@@ -6,6 +6,6 @@
 <body>
     Some error occurred:<br>
     <%=request.getAttribute("error")%><br>
-    <a href = 'index.jsp'>go back to main page</a>
+    <a href = '<%=request.getAttribute("goBackUrl")%>'>go back</a>
 </body>
 </html>

@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
@@ -20,8 +19,6 @@ public class DependencyInjectionServlet extends HttpServlet {
         super.init();
         ApplicationContext appCtx = new ApplicationContext();
         try {
-            File file = new File("a.txt");
-            System.out.println(file.getAbsolutePath());
             appCtx.init(PROPERTIES_FILENAME);
         } catch (IOException e) {
             logger.error("There is no properties file for injection. Current path is " + System.getProperty("user.dir"), e);

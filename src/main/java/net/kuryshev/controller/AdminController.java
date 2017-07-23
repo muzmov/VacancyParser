@@ -30,28 +30,14 @@ public class AdminController extends DependencyInjectionServlet {
             request.getRequestDispatcher("admin.jsp").forward(request, response);
             return;
         }
-
-        int numThreads = getNumThreads(request);
-        if (numThreads == -1) {
-            request.setAttribute("error", "You should choose a positive number of threads between 1 and 100");
-            request.getRequestDispatcher("error.jsp").forward(request, response);
-            return;
+        if (parseVacancies(request)) {
+            request.getRequestDispatcher("admin.jsp").forward(request, response);
         }
-
-        String searchString = request.getParameter("searchString");
-        Provider[] providers = getProviders(request, searchString, numThreads);
-        if (providers == null) {
-            request.setAttribute("error", "You should input a non empty query and choose at least one option from sites");
+        else {
+            request.setAttribute("error", "You should choose a positive number of threads between 1 and 100, input a non empty query and choose at least one option from sites");
+            request.setAttribute("goBackUrl", "admin.jsp");
             request.getRequestDispatcher("error.jsp").forward(request, response);
-            return;
         }
-
-        new Thread(() -> {
-            VacancyParser parser = new VacancyParserImpl(providers);
-            List<Vacancy> searchResults = parser.searchContaining(searchString);
-            logger.info(searchResults.size() + " results found");
-        }).start();
-        request.getRequestDispatcher("admin.jsp").forward(request, response);
     }
 
     private boolean delete(HttpServletRequest request) throws ServletException, IOException {
@@ -73,6 +59,22 @@ public class AdminController extends DependencyInjectionServlet {
             return true;
         }
         return false;
+    }
+
+    private boolean parseVacancies(HttpServletRequest request) throws ServletException, IOException {
+        int numThreads = getNumThreads(request);
+        if (numThreads == -1) return false;
+
+        String searchString = request.getParameter("searchString");
+        Provider[] providers = getProviders(request, searchString, numThreads);
+        if (providers == null) return false;
+
+        new Thread(() -> {
+            VacancyParser parser = new VacancyParserImpl(providers);
+            List<Vacancy> searchResults = parser.searchContaining(searchString);
+            logger.info(searchResults.size() + " results found");
+        }).start();
+        return true;
     }
 
     private int getNumThreads(HttpServletRequest request) throws ServletException, IOException {

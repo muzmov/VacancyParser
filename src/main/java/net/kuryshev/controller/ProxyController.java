@@ -39,41 +39,42 @@ public class ProxyController extends DependencyInjectionServlet {
 
     private void error(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setAttribute("error", "You should input a non empty set of proxies. One proxy per line in host:port format with no additional symbols");
+        request.setAttribute("goBackUrl", "admin.jsp");
         request.getRequestDispatcher("error.jsp").forward(request, response);
     }
 
+    class Task implements Runnable {
+        private Logger logger = Logger.getLogger(getClassName());
+        private String[] proxies;
+
+        Task(String[] proxies) {
+            this.proxies = proxies;
+        }
+
+        @Override
+        public void run() {
+            List<String> workingProxies = new ArrayList<>();
+            try {
+                for (String proxyString : proxies) {
+                    proxyString = proxyString.trim();
+                    String host = proxyString.split(":")[0];
+                    int port = Integer.parseInt(proxyString.split(":")[1]);
+                    Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
+                    if (ProxyChecker.isOk(proxy)) workingProxies.add(host + ":" + port + "\n");
+                }
+            } catch (Exception e) {
+                logger.warn("Exception during proxies parse: " + e.getMessage());
+            }
+            if (!workingProxies.isEmpty()) {
+                try (BufferedWriter bw = new BufferedWriter(new FileWriter("../webapps/VacancyParser/proxies.txt"))) {
+                    for (String proxy : workingProxies) bw.write(proxy);
+                }
+                catch (IOException e) {
+                    logger.warn("Exception when saving proxies to file: " + e.getMessage());
+                }
+            }
+            logger.info("All proxies were processed");
+        }
+    }
 }
 
-class Task implements Runnable {
-    private Logger logger = Logger.getLogger(getClassName());
-    private String[] proxies;
-
-    Task(String[] proxies) {
-        this.proxies = proxies;
-    }
-
-    @Override
-    public void run() {
-        List<String> workingProxies = new ArrayList<>();
-        try {
-            for (String proxyString : proxies) {
-                proxyString = proxyString.trim();
-                String host = proxyString.split(":")[0];
-                int port = Integer.parseInt(proxyString.split(":")[1]);
-                Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
-                if (ProxyChecker.isOk(proxy)) workingProxies.add(host + ":" + port + "\n");
-            }
-        } catch (Exception e) {
-            logger.warn("Exception during proxies parse: " + e.getMessage());
-        }
-        if (!workingProxies.isEmpty()) {
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter("../webapps/VacancyParser/proxies.txt"))) {
-                for (String proxy : workingProxies) bw.write(proxy);
-            }
-            catch (IOException e) {
-                logger.warn("Exception when saving proxies to file: " + e.getMessage());
-            }
-        }
-        logger.info("All proxies were processed");
-    }
-}
