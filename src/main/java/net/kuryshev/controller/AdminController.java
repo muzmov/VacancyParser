@@ -2,6 +2,7 @@ package net.kuryshev.controller;
 
 import net.kuryshev.controller.di.DependencyInjectionServlet;
 import net.kuryshev.controller.di.Inject;
+import net.kuryshev.model.TaskProgress;
 import net.kuryshev.model.VacancyParser;
 import net.kuryshev.model.VacancyParserImpl;
 import net.kuryshev.model.dao.VacancyDao;
@@ -31,6 +32,7 @@ public class AdminController extends DependencyInjectionServlet {
             return;
         }
         if (parseVacancies(request)) {
+           // request.getRequestDispatcher("progress.jsp").forward(request, response);
             request.getRequestDispatcher("admin.jsp").forward(request, response);
         }
         else {
@@ -52,9 +54,14 @@ public class AdminController extends DependencyInjectionServlet {
     private boolean parseReviews(HttpServletRequest request) throws ServletException, IOException {
         if (request.getParameter("parsereviews") != null) {
             logger.info("Parse rewiews request accepted");
+            TaskProgress progress = new TaskProgress();
+            progress.setProgress("parsing...");
+            request.getSession().setAttribute("ReviewsProgress", progress);
             new Thread(() -> {
                 CompanyStrategy strategy = new OraboteStrategy();
                 strategy.fillCompaniesInfo();
+                progress.setDone(true);
+                progress.setProgress("Done");
             }).start();
             return true;
         }
@@ -69,10 +76,16 @@ public class AdminController extends DependencyInjectionServlet {
         Provider[] providers = getProviders(request, searchString, numThreads);
         if (providers == null) return false;
 
+        TaskProgress progress = new TaskProgress();
+        progress.setProgress("parsing...");
+        request.getSession().setAttribute("ParsingProgress", progress);
+
         new Thread(() -> {
             VacancyParser parser = new VacancyParserImpl(providers);
             List<Vacancy> searchResults = parser.searchContaining(searchString);
             logger.info(searchResults.size() + " results found");
+            progress.setProgress(searchResults.size() + " results found");
+            progress.setDone(true);
         }).start();
         return true;
     }

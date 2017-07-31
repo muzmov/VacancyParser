@@ -43,4 +43,12 @@
         <servlet-name>SearchController</servlet-name>
         <servlet-class>net.kuryshev.controller.SearchController</servlet-class>
     </servlet>
+    <servlet-mapping>
+        <servlet-name>ProgressController</servlet-name>
+        <url-pattern>/progress.do</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>ProgressController</servlet-name>
+        <servlet-class>net.kuryshev.controller.ProgressController</servlet-class>
+    </servlet>
 </web-app>

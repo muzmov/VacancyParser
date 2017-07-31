@@ -2,6 +2,7 @@ package net.kuryshev.controller;
 
 import net.kuryshev.controller.di.DependencyInjectionServlet;
 import net.kuryshev.model.ProxyChecker;
+import net.kuryshev.model.TaskProgress;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
@@ -19,6 +20,7 @@ import static net.kuryshev.Utils.ClassUtils.getClassName;
 
 public class ProxyController extends DependencyInjectionServlet {
     private Logger logger = Logger.getLogger(getClassName());
+    private TaskProgress progress;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -33,6 +35,9 @@ public class ProxyController extends DependencyInjectionServlet {
         }
 
         String[] proxies = proxyParam.split("\n");
+        progress = new TaskProgress();
+        progress.setProgress("checking...");
+        request.getSession().setAttribute("ProxyProgress", progress);
         new Thread(new Task(proxies)).start();
         request.getRequestDispatcher("admin.jsp").forward(request, response);
     }
@@ -73,6 +78,8 @@ public class ProxyController extends DependencyInjectionServlet {
                     logger.warn("Exception when saving proxies to file: " + e.getMessage());
                 }
             }
+            progress.setProgress("Done");
+            progress.setDone(true);
             logger.info("All proxies were processed");
         }
     }

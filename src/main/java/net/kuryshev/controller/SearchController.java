@@ -23,7 +23,7 @@ public class SearchController extends DependencyInjectionServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         dao.setProperties("../webapps/VacancyParser/WEB-INF/classes/dao.properties");
-        String searchString = request.getParameter("searchString");
+        String searchString = new String(request.getParameter("searchString").getBytes("ISO-8859-1"));
         boolean inTitle = request.getParameter("title") != null;
         boolean inDescription = request.getParameter("description") != null;
         int numPlacesToSearch = (inTitle?1:0) + (inDescription?1:0);

@@ -3,35 +3,39 @@
 <html>
 <head>
     <title></title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="js/main.js"></script>
 </head>
 <body>
+
+
 <form action="admin_parse.do" method="post" id="nameform">
     Что ищем: <input type="text" name="searchString"><br>
     Число потоков (1 - 100): <input type="text" name="numThreads"><br>
     <label><input type="checkbox" name="hh" value="value">hh.ru</label><br>
     <label><input type="checkbox" name="moikrug" value="value">moikrug.ru</label><br>
 </form>
-<button type="submit" form="nameform" value="Submit">Отправить</button>
+<button type="submit" form="nameform" value="Submit">Отправить</button> <div id="parsingProgress"></div>
 <br>
 <br>
 <br>
-<form action = "admin_parse.do" method = "post" id = "deleteform">
-    <input type="hidden" name = "delete" value="delete">
+<form action="admin_parse.do" method="post" id="deleteform">
+    <input type="hidden" name="delete" value="delete">
     <input type="submit" value="Очистить базу данных">
 </form>
-<form action = "admin_parse.do" method = "post" id = "parsereviewsform">
-    <input type="hidden" name = "parsereviews" value="parse">
-    <input type="submit" value="Парсить отзывы">
+<form action="admin_parse.do" method="post" id="parsereviewsform">
+    <input type="hidden" name="parsereviews" value="parse">
+    <input type="submit" value="Парсить отзывы"> <div id="rewiewsProgress"></div>
 </form>
-<form action = "login.do" method = "post" id = "exitform">
-    <input type="hidden" name = "exit" value="exit">
+<form action="login.do" method="post" id="exitform">
+    <input type="hidden" name="exit" value="exit">
     <input type="submit" value="Выход">
 </form>
 <br>
-<form action = "proxy.do" method = "post" id = "proxyform">
-    <textarea rows = "15" cols = "40" name="proxies"></textarea>
+<form action="proxy.do" method="post" id="proxyform">
+    <textarea rows="15" cols="40" name="proxies"></textarea>
     <br>
-    <input type="submit" value="Проверить и добавить прокси">
+    <input type="submit" value="Проверить и добавить прокси"><div id="proxyProgress"></div>
 </form>
 </body>
 </html>

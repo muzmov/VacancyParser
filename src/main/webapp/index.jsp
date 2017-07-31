@@ -25,25 +25,25 @@
     <th>Title</th>
     <th>City</th>
     <th>Company Name</th>
-    <th>Company Rating</th>
-    <th>Company Reviews</th>
-    <th>Salary</th>
-  </tr>
+<th>Company Rating</th>
+<th>Company Reviews</th>
+<th>Salary</th>
+</tr>
 
-    <%for (Vacancy vacancy : (List<Vacancy>) request.getAttribute("vacancies")) { %>
+<%for (Vacancy vacancy : (List<Vacancy>) request.getAttribute("vacancies")) { %>
 
-  <tr class="vacancy">
-    <td class="title"><a href="<%=vacancy.getUrl()%>"><%=vacancy.getTitle()%></a></td>
-    <td class="city"><%=vacancy.getCity()%></td>
-    <td class="companyName"><a href = "<%=vacancy.getCompany().getUrl()%>"><%=vacancy.getCompany().getName()%></a></td>
-    <td class = "rating"><%=vacancy.getCompany().getRating() == 0 ? "" : vacancy.getCompany().getRating() + ""%></td>
-    <td class="reviews"><a href = "<%=vacancy.getCompany().getRewiewsUrl()%>"><%=vacancy.getCompany().getRewiewsUrl()%></a></td>
-    <td class="salary"><%=vacancy.getSalary()%></td>
-  </tr>
+<tr class="vacancy">
+  <td class="title"><a href="<%=vacancy.getUrl()%>"><%=vacancy.getTitle()%></a></td>
+  <td class="city"><%=vacancy.getCity()%></td>
+  <td class="companyName"><a href = "<%=vacancy.getCompany().getUrl()%>"><%=vacancy.getCompany().getName()%></a></td>
+  <td class = "rating"><%=vacancy.getCompany().getRating() == 0 ? "" : vacancy.getCompany().getRating() + ""%></td>
+  <td class="reviews"><a href = "<%=vacancy.getCompany().getRewiewsUrl()%>"><%=vacancy.getCompany().getRewiewsUrl()%></a></td>
+  <td class="salary"><%=vacancy.getSalary()%></td>
+</tr>
 
-  <% }} %>
+<% }} %>
 
-  </tbody>
+</tbody>
 </table>
 </body>
 </html>
