@@ -3,6 +3,7 @@ package net.kuryshev.controller;
 import net.kuryshev.controller.di.DependencyInjectionServlet;
 import net.kuryshev.controller.di.Inject;
 import net.kuryshev.model.SearchParams;
+import net.kuryshev.model.comparators.ComparatorFactoryFactory;
 import net.kuryshev.model.dao.VacancyDao;
 import net.kuryshev.model.entity.Vacancy;
 import org.apache.log4j.Logger;
@@ -11,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 
 import static net.kuryshev.Utils.ClassUtils.getClassName;
@@ -22,8 +24,14 @@ public class SearchController extends DependencyInjectionServlet {
     private VacancyDao dao;
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.getRequestDispatcher("results.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         dao.setProperties("../webapps/VacancyParser/WEB-INF/classes/dao.properties");
-        String searchString = new String(request.getParameter("searchString").getBytes("ISO-8859-1"));
+        //String searchString = new String(request.getParameter("searchString").getBytes("ISO-8859-1"));
+        String searchString = request.getParameter("searchString");
         boolean inTitle = request.getParameter("title") != null;
         boolean inDescription = request.getParameter("description") != null;
         int numPlacesToSearch = (inTitle?1:0) + (inDescription?1:0);
@@ -35,16 +43,17 @@ public class SearchController extends DependencyInjectionServlet {
             if (inDescription) params = SearchParams.SEARCH_IN_DESCRIPTION;
         }
 
+        String sortBy = request.getParameter("sortBy");
+        Comparator<Vacancy> comparator = ComparatorFactoryFactory.getFactory(sortBy).getComparator();
+
         logger.info("Searching for \"" + searchString + "\" in "
                 + (inTitle?"in title ":"") + (inDescription?"in description":""));
         List<Vacancy> searchResults = dao.selectContaining(searchString, params);
+        if (comparator != null) searchResults.sort(comparator);
         request.setAttribute("vacancies", searchResults);
         logger.info(searchResults.size() + " results found");
-        request.getRequestDispatcher("index.jsp").forward(request, response);
+        request.getRequestDispatcher("results.jsp").forward(request, response);
     }
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("index.jsp").forward(request, response);
-    }
+
 }
