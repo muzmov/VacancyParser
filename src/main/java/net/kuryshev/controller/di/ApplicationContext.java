@@ -6,7 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class ApplicationContext {
     private Logger logger = Logger.getLogger(getClassName());

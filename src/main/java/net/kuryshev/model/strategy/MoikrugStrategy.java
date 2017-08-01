@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class MoikrugStrategy extends AbstractVacancyStrategy {
     private static final String URL_FORMAT = "https://moikrug.ru/vacancies?q=%s&page=%d";

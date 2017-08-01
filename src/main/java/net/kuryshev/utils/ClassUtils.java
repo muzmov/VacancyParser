@@ -1,4 +1,4 @@
-package net.kuryshev.Utils;
+package net.kuryshev.utils;
 
 public class ClassUtils {
 

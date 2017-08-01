@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 
 public class VacancyDaoJdbc implements VacancyDao {
@@ -164,7 +164,7 @@ public class VacancyDaoJdbc implements VacancyDao {
     private void executeSqlUpdate(String sql) {
         try (
                 Connection con = DriverManager.getConnection(jdbcUrl, user, password);
-                Statement stmt = con.createStatement();)
+                Statement stmt = con.createStatement())
         {
             stmt.executeUpdate(sql);
         } catch (SQLException sqlEx) {
@@ -187,7 +187,7 @@ public class VacancyDaoJdbc implements VacancyDao {
 
         int addedVacanciesCounter = 0;
         try (Connection con = DriverManager.getConnection(jdbcUrl, user, password);
-             Statement stmt = con.createStatement();)
+             Statement stmt = con.createStatement())
         {
             con.setAutoCommit(false);
             for (Vacancy vacancy : vacancies) {

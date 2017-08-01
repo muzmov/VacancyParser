@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.Properties;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class UserDaoJdbc implements UserDao {
 
@@ -62,7 +62,7 @@ public class UserDaoJdbc implements UserDao {
     @Override
     public UserRole getRole(User user) {
         try (Connection con = DriverManager.getConnection(jdbcUrl, this.user, password);
-            Statement stmt = con.createStatement(); )
+            Statement stmt = con.createStatement())
         {
             String[] columns = {"login", "password"};
             String[] filters = {user.getLogin(), user.getPassword()};
@@ -87,7 +87,7 @@ public class UserDaoJdbc implements UserDao {
     @Override
     public void addUser(User user) {
         try (Connection con = DriverManager.getConnection(jdbcUrl, this.user, password);
-             Statement stmt = con.createStatement(); )
+             Statement stmt = con.createStatement())
         {
             String[] values = {user.getLogin(), user.getPassword(), user.getRole().toString()};
             Sql insertSql = new InsertSql("Users", values);
@@ -102,7 +102,7 @@ public class UserDaoJdbc implements UserDao {
     @Override
     public void deleteUser(String login) {
         try (Connection con = DriverManager.getConnection(jdbcUrl, this.user, password);
-             Statement stmt = con.createStatement(); )
+             Statement stmt = con.createStatement())
         {
             String[] filters = {login};
             String[] columns = {"login"};

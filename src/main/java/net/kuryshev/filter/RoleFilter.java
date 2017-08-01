@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class RoleFilter implements Filter {
     private Logger logger = Logger.getLogger(getClassName());

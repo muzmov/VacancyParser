@@ -7,7 +7,7 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.net.Proxy;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class ProxyChecker {
     private static Logger logger = Logger.getLogger(getClassName());

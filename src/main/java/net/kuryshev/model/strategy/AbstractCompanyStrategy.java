@@ -7,13 +7,13 @@ import org.apache.log4j.Logger;
 
 import java.util.List;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public abstract class AbstractCompanyStrategy implements CompanyStrategy {
     protected static Logger logger = Logger.getLogger(getClassName());
     private final static int MAX_FAILS = 3;
     private CompanyDao dao =  new CompanyDaoJdbc();
-    protected int failedAttempts;
+    int failedAttempts;
 
 
     @Override

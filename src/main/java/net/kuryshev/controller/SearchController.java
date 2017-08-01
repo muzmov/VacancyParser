@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class SearchController extends DependencyInjectionServlet {
     private Logger logger = Logger.getLogger(getClassName());

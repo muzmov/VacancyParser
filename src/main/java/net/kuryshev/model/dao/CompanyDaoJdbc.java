@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class CompanyDaoJdbc implements CompanyDao {
     private static Logger logger = Logger.getLogger(getClassName());
@@ -95,7 +95,7 @@ public class CompanyDaoJdbc implements CompanyDao {
 
         int addedVacanciesCounter = 0;
         try (Connection con = DriverManager.getConnection(jdbcUrl, user, password);
-             Statement stmt = con.createStatement();)
+             Statement stmt = con.createStatement())
         {
             con.setAutoCommit(false);
             for (Company company : companies) {

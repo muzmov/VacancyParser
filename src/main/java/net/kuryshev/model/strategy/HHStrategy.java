@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class HHStrategy extends AbstractVacancyStrategy {
     private final static String URL_FORMAT = "http://hh.ru/search/vacancy?text=%s&page=%d";

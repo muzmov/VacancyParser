@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class VacancyParserImpl implements VacancyParser {
     private Logger logger = Logger.getLogger(getClassName());

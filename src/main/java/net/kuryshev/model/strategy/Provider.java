@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class Provider {
     private int numThreads = 10;
@@ -25,12 +25,9 @@ public class Provider {
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < numThreads; i++) {
             int initialPage = i;
-            threads[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    List<Vacancy> result = strategy.getVacancies(searchString, initialPage, numThreads);
-                    vacancies.addAll(result);
-                }
+            threads[i] = new Thread(() -> {
+                List<Vacancy> result = strategy.getVacancies(searchString, initialPage, numThreads);
+                vacancies.addAll(result);
             });
             threads[i].start();
         }

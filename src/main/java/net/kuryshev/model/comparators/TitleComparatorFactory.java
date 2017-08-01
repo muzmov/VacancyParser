@@ -7,7 +7,7 @@ import java.util.Comparator;
 public class TitleComparatorFactory implements ComparatorFactory {
     private boolean reverseOrder;
 
-    public TitleComparatorFactory(boolean reverseOrder) {
+    TitleComparatorFactory(boolean reverseOrder) {
         this.reverseOrder = reverseOrder;
     }
 
@@ -18,10 +18,10 @@ public class TitleComparatorFactory implements ComparatorFactory {
         else return comparator;
     }
 
-    class TitleComparator implements Comparator<Vacancy> {
+    private static class TitleComparator implements Comparator<Vacancy> {
         @Override
         public int compare(Vacancy o1, Vacancy o2) {
             return o1.getTitle().compareTo(o2.getTitle());
         }
-    };
+    }
 }

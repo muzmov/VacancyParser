@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class DependencyInjectionServlet extends HttpServlet {
     private Logger logger = Logger.getLogger(getClassName());

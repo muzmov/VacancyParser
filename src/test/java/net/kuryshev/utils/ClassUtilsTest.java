@@ -1,10 +1,9 @@
-package net.kuryshev.Utils;
+package net.kuryshev.utils;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
-import static org.junit.Assert.*;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 /**
  * Created by 1 on 27.06.2017.

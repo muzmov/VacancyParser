@@ -16,7 +16,7 @@ import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.kuryshev.Utils.ClassUtils.getClassName;
+import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public class ProxyController extends DependencyInjectionServlet {
     private Logger logger = Logger.getLogger(getClassName());

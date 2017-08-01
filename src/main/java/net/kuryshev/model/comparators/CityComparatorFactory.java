@@ -7,7 +7,7 @@ import java.util.Comparator;
 public class CityComparatorFactory implements ComparatorFactory {
     private boolean reverseOrder;
 
-    public CityComparatorFactory(boolean reverseOrder) {
+    CityComparatorFactory(boolean reverseOrder) {
         this.reverseOrder = reverseOrder;
     }
 
@@ -18,10 +18,10 @@ public class CityComparatorFactory implements ComparatorFactory {
         else return comparator;
     }
 
-    class CityComparator implements Comparator<Vacancy> {
+    static class CityComparator implements Comparator<Vacancy> {
         @Override
         public int compare(Vacancy o1, Vacancy o2) {
             return o1.getCity().compareTo(o2.getCity());
         }
-    };
+    }
 }
