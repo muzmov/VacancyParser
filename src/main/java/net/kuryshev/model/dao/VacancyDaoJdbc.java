@@ -7,22 +7,14 @@ import net.kuryshev.model.entity.Company;
 import net.kuryshev.model.entity.Vacancy;
 import org.apache.log4j.Logger;
 
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
 import static net.kuryshev.utils.ClassUtils.getClassName;
 
 
-public class VacancyDaoJdbc implements VacancyDao {
-
+public class VacancyDaoJdbc extends VacancyDao {
     private static Logger logger = Logger.getLogger(getClassName());
-
-    private String driverClassName = "com.mysql.jdbc.Driver";
-    private String jdbcUrl = "jdbc:mysql://localhost:3306/vacancyparser?useSSL=false";
-    private String user = "root";
-    private String password = "password";
 
     private CompanyDaoJdbc companyDao = new CompanyDaoJdbc();
 
@@ -37,28 +29,10 @@ public class VacancyDaoJdbc implements VacancyDao {
         }
     }
 
+    @Override
     public void setProperties(String propertiesPath) throws IllegalArgumentException {
-        Properties props = new Properties();
-        try {
-            props.load(new FileReader(propertiesPath));
-        } catch (IOException e) {
-            logger.error("Can't open properties file for dao." + e.getMessage());
-            throw new IllegalArgumentException();
-        }
-        driverClassName = props.getProperty("DRIVER_CLASS_NAME");
-        jdbcUrl = props.getProperty("JDBC_URL");
-        user = props.getProperty("USER");
-        password = props.getProperty("PASSWORD");
-        if (driverClassName == null || jdbcUrl == null || user == null || password == null) {
-            logger.error("Not enough info in property file for dao.");
-            throw new IllegalArgumentException();
-        }
+        super.setProperties(propertiesPath);
         companyDao.setProperties(propertiesPath);
-        try {
-            Class.forName(driverClassName);
-        } catch (ClassNotFoundException e) {
-            logger.error("Can't find MYSQL driver", e);
-        }
     }
 
     @Override
@@ -181,7 +155,6 @@ public class VacancyDaoJdbc implements VacancyDao {
 
     @Override
     public void addAll(List<Vacancy> vacancies) {
-        Set<String> companyNameSet = new HashSet<>();
         List<Company> companies = new ArrayList<>();
         logger.debug("Adding a bunch (" + vacancies.size() + ") of vacancies to DB");
 

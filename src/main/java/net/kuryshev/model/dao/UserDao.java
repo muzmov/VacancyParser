@@ -3,13 +3,11 @@ package net.kuryshev.model.dao;
 import net.kuryshev.model.entity.User;
 import net.kuryshev.model.entity.UserRole;
 
-public interface UserDao {
+public abstract class UserDao extends Dao {
 
-    public void setProperties(String propertiesPath) throws IllegalArgumentException;
+    public abstract UserRole getRole(User user);
 
-    UserRole getRole(User user);
+    public abstract void addUser(User user);
 
-    void addUser(User user);
-
-    void deleteUser(String login);
+    public abstract void deleteUser(String login);
 }

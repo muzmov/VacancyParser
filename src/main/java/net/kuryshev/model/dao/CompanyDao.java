@@ -6,21 +6,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface CompanyDao {
+public abstract class CompanyDao extends Dao {
 
-    public void setProperties(String propertiesPath) throws IllegalArgumentException;
+    public abstract List<Company> selectAll();
 
-    List<Company> selectAll();
+    public abstract Company getCompanyByName(String companyName);
 
-    Company getCompanyByName(String companyName);
+    public abstract Map<String, Company> getCompaniesByNames(Set<String> companyNames);
 
-    Map<String, Company> getCompaniesByNames(Set<String> companyNames);
+    public abstract void add(Company company);
 
-    void add(Company company);
+    public abstract void addAll(List<Company> company);
 
-    void addAll(List<Company> company);
+    public abstract void deleteAll();
 
-    void deleteAll();
-
-    void update(Company company);
+    public abstract void update(Company company);
 }

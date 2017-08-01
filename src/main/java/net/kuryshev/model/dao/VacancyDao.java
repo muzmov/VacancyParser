@@ -5,17 +5,15 @@ import net.kuryshev.model.entity.Vacancy;
 
 import java.util.List;
 
-public interface VacancyDao {
+public abstract class VacancyDao extends Dao {
 
-    public void setProperties(String propertiesPath) throws IllegalArgumentException;
+    public abstract List<Vacancy> selectAll();
 
-    List<Vacancy> selectAll();
+    public abstract List<Vacancy> selectContaining(String query, SearchParams params);
 
-    List<Vacancy> selectContaining(String query, SearchParams params);
+    public abstract void deleteAll();
 
-    void deleteAll();
+    public abstract void add(Vacancy vacancy);
 
-    void add(Vacancy vacancy);
-
-    void addAll(List<Vacancy> vacancies);
+    public abstract void addAll(List<Vacancy> vacancies);
 }
