@@ -51,4 +51,7 @@
         <servlet-name>ProgressController</servlet-name>
         <servlet-class>net.kuryshev.controller.ProgressController</servlet-class>
     </servlet>
+    <listener>
+        <listener-class>net.kuryshev.listener.SessionCounter</listener-class>
+    </listener>
 </web-app>
