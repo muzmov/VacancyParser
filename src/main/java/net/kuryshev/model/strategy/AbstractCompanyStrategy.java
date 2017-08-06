@@ -21,7 +21,7 @@ public abstract class AbstractCompanyStrategy implements CompanyStrategy {
         dao.setProperties("../webapps/VacancyParser/WEB-INF/classes/dao.properties");
         List<Company> companies = dao.selectAll();
         for(Company company : companies) {
-            if (company.getRewiewsUrl().equals("")) fillExternalCompanyInfo(company);
+            if (company.getReviewsUrl().equals("")) fillExternalCompanyInfo(company);
             if (failedAttempts > MAX_FAILS) {
                 logger.error("Too many failed attempts. Parsing is stopped.");
                 break;

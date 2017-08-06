@@ -2,20 +2,20 @@ package net.kuryshev.model.entity;
 
 public class Company {
     private int id;
-    private String name, url, rewiewsUrl;
+    private String name, url, reviewsUrl;
     private double rating;
 
-    public Company(String name, String url, String rewiewsUrl, double rating) {
+    public Company(String name, String url, String reviewsUrl, double rating) {
         this.name = name;
         this.url = url;
-        this.rewiewsUrl = rewiewsUrl;
+        this.reviewsUrl = reviewsUrl;
         this.rating = rating;
     }
 
     public Company() {
         this.name = "empty";
         this.url = "";
-        this.rewiewsUrl = "";
+        this.reviewsUrl = "";
         this.rating = 0;
     }
 
@@ -43,12 +43,12 @@ public class Company {
         this.url = url;
     }
 
-    public String getRewiewsUrl() {
-        return rewiewsUrl;
+    public String getReviewsUrl() {
+        return reviewsUrl;
     }
 
-    public void setRewiewsUrl(String rewiewsUrl) {
-        this.rewiewsUrl = rewiewsUrl;
+    public void setReviewsUrl(String reviewsUrl) {
+        this.reviewsUrl = reviewsUrl;
     }
 
     public double getRating() {
@@ -69,7 +69,7 @@ public class Company {
         if (Double.compare(company.rating, rating) != 0) return false;
         if (name != null ? !name.equals(company.name) : company.name != null) return false;
         if (url != null ? !url.equals(company.url) : company.url != null) return false;
-        return rewiewsUrl != null ? rewiewsUrl.equals(company.rewiewsUrl) : company.rewiewsUrl == null;
+        return reviewsUrl != null ? reviewsUrl.equals(company.reviewsUrl) : company.reviewsUrl == null;
     }
 
     @Override
@@ -78,7 +78,7 @@ public class Company {
         long temp;
         result = name != null ? name.hashCode() : 0;
         result = 31 * result + (url != null ? url.hashCode() : 0);
-        result = 31 * result + (rewiewsUrl != null ? rewiewsUrl.hashCode() : 0);
+        result = 31 * result + (reviewsUrl != null ? reviewsUrl.hashCode() : 0);
         temp = Double.doubleToLongBits(rating);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
@@ -86,6 +86,6 @@ public class Company {
 
     @Override
     public String toString() {
-        return "Company{" + "name='" + name + '\'' + ", url='" + url + '\'' + ", rewiewsUrl='" + rewiewsUrl + '\'' + ", rating=" + rating + '}';
+        return "Company{" + "name='" + name + '\'' + ", url='" + url + '\'' + ", reviewsUrl='" + reviewsUrl + '\'' + ", rating=" + rating + '}';
     }
 }

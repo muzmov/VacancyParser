@@ -69,7 +69,7 @@ public class OraboteStrategy extends AbstractCompanyStrategy {
         //TODO: hanlde all the elements?
         Element element = elements.first();
         company.setRating(getCompanyRating(element));
-        company.setRewiewsUrl(getCompanyRewiewsUrl(element));
+        company.setReviewsUrl(getCompanyRewiewsUrl(element));
     }
 
 
@@ -96,7 +96,7 @@ public class OraboteStrategy extends AbstractCompanyStrategy {
 
     private void setDefaultExternalCompanyInfo(Company company) {
         company.setRating(0);
-        company.setRewiewsUrl("");
+        company.setReviewsUrl("");
     }
 
     private double getCompanyRating(Element element) {

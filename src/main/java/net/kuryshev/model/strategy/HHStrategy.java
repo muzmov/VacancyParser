@@ -80,7 +80,7 @@ public class HHStrategy extends AbstractVacancyStrategy {
             company.setUrl("http://hh.ru" + element.getElementsByAttributeValue("data-qa", "vacancy-serp__vacancy-employer").attr("href"));
 
             company.setRating(0);
-            company.setRewiewsUrl("");
+            company.setReviewsUrl("");
             companies.put(companyName, company);
         }
         return company;
@@ -88,7 +88,7 @@ public class HHStrategy extends AbstractVacancyStrategy {
 
     private void setDefaultExternalCompanyInfo(Company company) {
         company.setRating(0);
-        company.setRewiewsUrl("");
+        company.setReviewsUrl("");
     }
 
     @Override

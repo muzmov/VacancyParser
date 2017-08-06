@@ -16,7 +16,7 @@ import static net.kuryshev.utils.ClassUtils.getClassName;
 
 public abstract class AbstractVacancyStrategy implements VacancyStrategy {
     private static Logger logger = Logger.getLogger(getClassName());
-    private static final int MAX_PAGES = 10;
+    private static final int MAX_PAGES = 20;
 
 
     @Override

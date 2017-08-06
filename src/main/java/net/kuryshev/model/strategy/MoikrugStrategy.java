@@ -76,7 +76,7 @@ public class MoikrugStrategy extends AbstractVacancyStrategy {
             }
 
             company.setRating(0);
-            company.setRewiewsUrl("");
+            company.setReviewsUrl("");
 
             companies.put(companyName, company);
         }

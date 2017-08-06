@@ -40,6 +40,11 @@
             <artifactId>jsoup</artifactId>
             <version>1.10.3</version>
         </dependency>
+        <dependency>
+            <groupId>jstl</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -62,8 +67,8 @@
                     <password>iK4p4EhYXVf7</password>
                     <update>true</update>
                     <path>/VacancyParser</path>
-                </configuration>
-<!--                <configuration>
+                </configuration><!--
+                <configuration>
                     <url>http://localhost:8080/manager/text/</url>
                     <server>TomcatServer</server>
                     <username>admin</username>

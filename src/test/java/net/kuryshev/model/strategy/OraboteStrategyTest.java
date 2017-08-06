@@ -11,7 +11,7 @@ public class OraboteStrategyTest {
     @Ignore
     @Test
     public void getDocumentWithPost() {
-        Document document = null;
+        Document document;
         document = new OraboteStrategy().getDocument("https://orabote.top/feedback/search", "ростелеком");
         Assert.assertNotNull(document);
     }
@@ -23,7 +23,7 @@ public class OraboteStrategyTest {
         company.setName("ростелеком");
         new OraboteStrategy().fillExternalCompanyInfo(company);
         System.out.println(company);
-        Assert.assertNotEquals(company.getRewiewsUrl(), "");
+        Assert.assertNotEquals(company.getReviewsUrl(), "");
         Assert.assertNotEquals(company.getRating(), 0);
     }
 
@@ -33,7 +33,7 @@ public class OraboteStrategyTest {
         Company company = new Company();
         company.setName("ростеdsfsdgлеком");
         new OraboteStrategy().fillExternalCompanyInfo(company);
-        Assert.assertEquals("", company.getRewiewsUrl());
+        Assert.assertEquals("", company.getReviewsUrl());
         Assert.assertEquals(0.0, company.getRating(), 0.0001);
     }
 }

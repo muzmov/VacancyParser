@@ -21,7 +21,7 @@ public class ReviewsComparatorFactory implements ComparatorFactory{
     private static class ReviewsComparator implements Comparator<Vacancy> {
         @Override
         public int compare(Vacancy o1, Vacancy o2) {
-            return o1.getCompany().getRewiewsUrl().compareTo(o2.getCompany().getRewiewsUrl());
+            return o1.getCompany().getReviewsUrl().compareTo(o2.getCompany().getReviewsUrl());
         }
     }
 }

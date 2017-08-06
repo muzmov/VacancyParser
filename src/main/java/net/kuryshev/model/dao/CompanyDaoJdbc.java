@@ -45,7 +45,7 @@ public class CompanyDaoJdbc extends CompanyDao {
         company = new Company();
         company.setName(rsCompany.getString("name"));
         company.setUrl(rsCompany.getString("url"));
-        company.setRewiewsUrl(rsCompany.getString("reviews_url"));
+        company.setReviewsUrl(rsCompany.getString("reviews_url"));
         company.setRating(rsCompany.getDouble("rating"));
         return company;
     }
@@ -86,7 +86,7 @@ public class CompanyDaoJdbc extends CompanyDao {
     }
 
     private String getInsertCompanySql(Company company) {
-        String[] values = {company.getName(), company.getUrl(), company.getRating() + "", company.getRewiewsUrl()};
+        String[] values = {company.getName(), company.getUrl(), company.getRating() + "", company.getReviewsUrl()};
         Sql insertSql = new InsertSql("Companies", values);
         return insertSql.generate();
     }

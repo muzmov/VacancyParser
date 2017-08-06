@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import static net.kuryshev.utils.ClassUtils.getClassName;
 
@@ -52,8 +53,20 @@ public class SearchController extends DependencyInjectionServlet {
         if (comparator != null) searchResults.sort(comparator);
         request.setAttribute("vacancies", searchResults);
         logger.info(searchResults.size() + " results found");
+
+        setRequestUrl(request);
+
         request.getRequestDispatcher("results.jsp").forward(request, response);
     }
 
+    private void setRequestUrl(HttpServletRequest request) {
+        Map<String, String[]> params = request.getParameterMap();
+        String requestString = "";
+        for (Map.Entry<String, String[]> entry : params.entrySet()) {
+            if (!entry.getKey().equals("sortBy")) requestString += entry.getKey() + "=" + entry.getValue()[0] + "&";
+        }
+        requestString = requestString.substring(0, requestString.length() - 1);
+        request.setAttribute("requestString", requestString);
+    }
 
 }

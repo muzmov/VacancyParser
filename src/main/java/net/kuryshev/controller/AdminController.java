@@ -31,10 +31,8 @@ public class AdminController extends DependencyInjectionServlet {
             request.getRequestDispatcher("admin.jsp").forward(request, response);
             return;
         }
-        if (parseVacancies(request)) {
-           // request.getRequestDispatcher("progress.jsp").forward(request, response);
+        if (parseVacancies(request))
             request.getRequestDispatcher("admin.jsp").forward(request, response);
-        }
         else {
             request.setAttribute("error", "You should choose a positive number of threads between 1 and 100, input a non empty query and choose at least one option from sites");
             request.setAttribute("goBackUrl", "admin.jsp");
