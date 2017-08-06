@@ -66,7 +66,6 @@ public class OraboteStrategy extends AbstractCompanyStrategy {
             setDefaultExternalCompanyInfo(company);
             return;
         }
-        //TODO: hanlde all the elements?
         Element element = elements.first();
         company.setRating(getCompanyRating(element));
         company.setReviewsUrl(getCompanyRewiewsUrl(element));

@@ -13,26 +13,17 @@ import java.util.*;
 import static net.kuryshev.utils.ClassUtils.getClassName;
 
 
-public class VacancyDaoJdbc extends VacancyDao {
+public class VacancyDaoJdbc extends DaoJdbc implements VacancyDao {
     private static Logger logger = Logger.getLogger(getClassName());
 
     private CompanyDaoJdbc companyDao = new CompanyDaoJdbc();
 
     private Map<Vacancy, String> companyMap = new HashMap<>();
 
-
-    public VacancyDaoJdbc() {
-        try {
-            Class.forName(driverClassName);
-        } catch (ClassNotFoundException e) {
-            logger.error("Can't find MYSQL driver", e);
-        }
-    }
-
     @Override
     public void setProperties(String propertiesPath) throws IllegalArgumentException {
         super.setProperties(propertiesPath);
-        companyDao.setProperties(propertiesPath);
+        if (companyDao != null) companyDao.setProperties(propertiesPath);
     }
 
     @Override

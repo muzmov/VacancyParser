@@ -33,12 +33,12 @@ public class VacancyDaoJdbcTest {
 
     @Before
     public void setUp() {
-        dao.setProperties("src/test/resources/testdao.properties");
+        dao.setProperties("/testdao.properties");
         try (Connection con = DriverManager.getConnection(JDBC_URL, user, password);
             Statement stmt = con.createStatement())
         {
-            for (int i = 0; i < SET_UP_SQL.length; i++) {
-                stmt.executeUpdate(SET_UP_SQL[i]);
+            for (String sql : SET_UP_SQL) {
+                stmt.executeUpdate(sql);
             }
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
@@ -76,7 +76,7 @@ public class VacancyDaoJdbcTest {
         long finish = System.currentTimeMillis();
         System.out.println("100 vacancies added in " + (finish - start));
         start = System.currentTimeMillis();
-        vacancies = dao.selectAll();
+        dao.selectAll();
         finish = System.currentTimeMillis();
         System.out.println("100 vacancies selected in " + (finish - start));
     }

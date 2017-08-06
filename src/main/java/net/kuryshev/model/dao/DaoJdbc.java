@@ -2,13 +2,12 @@ package net.kuryshev.model.dao;
 
 import org.apache.log4j.Logger;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
 import static net.kuryshev.utils.ClassUtils.getClassName;
 
-public abstract class Dao {
+public abstract class DaoJdbc {
     private static Logger logger = Logger.getLogger(getClassName());
 
     String driverClassName = "com.mysql.jdbc.Driver";
@@ -16,10 +15,19 @@ public abstract class Dao {
     String user = "root";
     String password = "password";
 
+    DaoJdbc() {
+        setProperties("/dao.properties");
+        try {
+            Class.forName(driverClassName);
+        } catch (ClassNotFoundException e) {
+            logger.error("Can't find DBMS driver", e);
+        }
+    }
+
     public void setProperties(String propertiesPath) throws IllegalArgumentException {
         Properties props = new Properties();
         try {
-            props.load(new FileReader(propertiesPath));
+            props.load(getClass().getResourceAsStream(propertiesPath));
         } catch (IOException e) {
             logger.error("Can't open properties file for dao." + e.getMessage());
             throw new IllegalArgumentException();

@@ -14,14 +14,12 @@ import static net.kuryshev.utils.ClassUtils.getClassName;
 public class VacancyParserImpl implements VacancyParser {
     private Logger logger = Logger.getLogger(getClassName());
 
-    //TODO make dynamic
     private VacancyDao dao = new VacancyDaoJdbc();
     private Provider[] providers;
 
     public VacancyParserImpl(Provider... providers) {
         if (providers == null || providers.length == 0) throw new IllegalArgumentException();
         this.providers = providers;
-        dao.setProperties("../webapps/VacancyParser/WEB-INF/classes/dao.properties");
     }
 
     @Override

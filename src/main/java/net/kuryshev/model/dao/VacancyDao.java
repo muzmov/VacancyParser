@@ -5,15 +5,15 @@ import net.kuryshev.model.entity.Vacancy;
 
 import java.util.List;
 
-public abstract class VacancyDao extends Dao {
+public interface VacancyDao  {
 
-    public abstract List<Vacancy> selectAll();
+    List<Vacancy> selectAll();
 
-    public abstract List<Vacancy> selectContaining(String query, SearchParams params);
+    List<Vacancy> selectContaining(String query, SearchParams params);
 
-    public abstract void deleteAll();
+    void deleteAll();
 
-    public abstract void add(Vacancy vacancy);
+    void add(Vacancy vacancy);
 
-    public abstract void addAll(List<Vacancy> vacancies);
+    void addAll(List<Vacancy> vacancies);
 }

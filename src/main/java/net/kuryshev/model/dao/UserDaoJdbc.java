@@ -12,17 +12,9 @@ import java.sql.*;
 
 import static net.kuryshev.utils.ClassUtils.getClassName;
 
-public class UserDaoJdbc extends UserDao {
+public class UserDaoJdbc extends DaoJdbc implements UserDao {
 
     private static Logger logger = Logger.getLogger(getClassName());
-
-    public UserDaoJdbc() {
-        try {
-            Class.forName(driverClassName);
-        } catch (ClassNotFoundException e) {
-            logger.error("Can't find MYSQL driver", e);
-        }
-    }
 
     @Override
     public UserRole getRole(User user) {

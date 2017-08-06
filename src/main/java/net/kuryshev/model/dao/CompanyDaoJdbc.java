@@ -9,17 +9,8 @@ import java.util.*;
 
 import static net.kuryshev.utils.ClassUtils.getClassName;
 
-public class CompanyDaoJdbc extends CompanyDao {
+public class CompanyDaoJdbc extends DaoJdbc implements CompanyDao {
     private static Logger logger = Logger.getLogger(getClassName());
-
-    public CompanyDaoJdbc() {
-        try {
-            Class.forName(driverClassName);
-        } catch (ClassNotFoundException e) {
-            logger.error("Can't find MYSQL driver", e);
-        }
-
-    }
 
     @Override
     public List<Company> selectAll() {

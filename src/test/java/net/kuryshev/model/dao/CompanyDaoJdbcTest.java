@@ -22,19 +22,26 @@ public class CompanyDaoJdbcTest {
             "USE vacancyparser_test",
             "SET SQL_SAFE_UPDATES = 0",
             "DROP TABLE IF EXISTS Vacancies",
-            "CREATE TABLE Vacancies (\n" + "  id          INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" + "  title       TEXT NOT NULL,\n" + "  description TEXT,\n" + "  url         VARCHAR(255) NOT NULL UNIQUE ,\n" + "  site_name   VARCHAR(32) NOT NULL ,\n" + "  city        VARCHAR(32) NOT NULL ,\n" + "  company  VARCHAR(255) NOT NULL ,\n" + "  salary      VARCHAR(255),\n" + "  rating      DOUBLE\n" + ")",
+            "CREATE TABLE Vacancies (\n" + "  id          INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" +
+                    "  title       TEXT NOT NULL,\n" + "  description TEXT,\n" +
+                    "  url         VARCHAR(255) NOT NULL UNIQUE ,\n" + "  site_name   VARCHAR(32) NOT NULL ,\n" +
+                    "  city        VARCHAR(32) NOT NULL ,\n" + "  company  VARCHAR(255) NOT NULL ,\n" +
+                    "  salary      VARCHAR(255),\n" + "  rating      DOUBLE\n" + ")",
             "DROP TABLE IF EXISTS Companies",
-            "CREATE TABLE Companies (\n" + " name        VARCHAR(255) NOT NULL PRIMARY KEY ,\n" + "  url         VARCHAR(255) NOT NULL,\n" + "  rating      DOUBLE,\n" + "  reviews_url TEXT\n" + ")"};
+            "CREATE TABLE Companies (\n" + " name        VARCHAR(255) NOT NULL PRIMARY KEY ,\n" +
+                    "  url         VARCHAR(255) NOT NULL,\n" +
+                    "  rating      DOUBLE,\n" +
+                    "  reviews_url TEXT\n" + ")"};
     private static final String TEAR_DOWN_SQL = "DROP SCHEMA IF EXISTS vacancyparser_test";
 
     @Before
     public void setUp() {
-        dao.setProperties("src/test/resources/testdao.properties");
+        dao.setProperties("/testdao.properties");
         try (Connection con = DriverManager.getConnection(JDBC_URL, user, password);
              Statement stmt = con.createStatement())
         {
-            for (int i = 0; i < SET_UP_SQL.length; i++) {
-                stmt.executeUpdate(SET_UP_SQL[i]);
+            for (String sql : SET_UP_SQL) {
+                stmt.executeUpdate(sql);
             }
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
@@ -69,12 +76,7 @@ public class CompanyDaoJdbcTest {
         dao.addAll(addedCompanies);
         List<Company> companies = dao.selectAll();
         Assert.assertEquals(100, companies.size());
-        Collections.sort(addedCompanies, new Comparator<Company>() {
-            @Override
-            public int compare(Company o1, Company o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+        addedCompanies.sort(Comparator.comparing(Company::getName));
         Assert.assertEquals(addedCompanies, companies);
     }
 
