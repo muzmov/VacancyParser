@@ -1,5 +1,5 @@
-<%@ page import="net.kuryshev.listener.SessionCounter" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib prefix="sc" uri="ActiveSessionsCounter" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -27,7 +27,7 @@
 <div id="parsingProgress"></div>
 <br>
 <br>
-Active sessions: <%=SessionCounter.getSessions()%> <br>
+Active sessions: ${sc:getSessions()} <br>
 <br>
 <form action="admin_parse.do" method="post" id="deleteform">
     <input type="hidden" name="delete" value="delete">

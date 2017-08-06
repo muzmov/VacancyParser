@@ -1,8 +1,8 @@
-<jsp:useBean id="requestString" scope="request" type="java.lang.String"/>
-<jsp:useBean id="vacancies" scope="request" type="java.util.List"/>
-
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<jsp:useBean id="requestString" scope="request" type="java.lang.String"/>
+<jsp:useBean id="vacancies" scope="request" type="java.util.List"/>
 
 <table>
     <tbody>

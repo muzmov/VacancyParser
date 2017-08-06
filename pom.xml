@@ -64,11 +64,11 @@
                     <url>http://ec2-54-89-158-194.compute-1.amazonaws.com/manager/text/</url>
                     <server>TomcatServer</server>
                     <username>admin</username>
-                    <password>iK4p4EhYXVf7</password>
+                    <password></password>
                     <update>true</update>
                     <path>/VacancyParser</path>
-                </configuration><!--
-                <configuration>
+                </configuration>
+<!--                <configuration>
                     <url>http://localhost:8080/manager/text/</url>
                     <server>TomcatServer</server>
                     <username>admin</username>
